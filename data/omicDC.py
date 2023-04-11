@@ -143,24 +143,7 @@ def create_sorted_bed_file(
     progress(a, notebook = False)
 
 
-def parse_private():
-    """Function to take data from private .txt file"""
-    d = {}
-    with open(PRIVATE_PATH) as f:
-        for line in f:
-            if str(line) == '___Doc_list___\n':
-                if args.verbose:
-                    print('___Doc_list___')
-                continue
-            (key, val) = line.split()
-            d[str(key)] = val
-
-            if args.verbose:
-                print(key, ':', val)
-    return(d)
-
-
-def omics(expid: str, assembly_threshold: str , antigen_class: str, antigen: str, cell_type: str, cell: str, storage: Path = './',  assembly: str = 'hg38',):
+def omics(expid: str, assembly_threshold: str , antigen_class: str, antigen: str, cell_type: str, cell: str, storage: Path = './',  assembly: str = 'hg38', ncores: int = 2, nworkers: int = 4):
     '''
     Function to create omics data from chip-atlas database.
     Arguments:
@@ -172,6 +155,7 @@ def omics(expid: str, assembly_threshold: str , antigen_class: str, antigen: str
         cell: str
         storage: Path, default is './'
         assembly: str, default is 'hg38'
+        ncores and nworkers: int, multithread parametrs
 
     Outputs:
         In Path functions creates .csv file with omic data
@@ -179,10 +163,9 @@ def omics(expid: str, assembly_threshold: str , antigen_class: str, antigen: str
     Returns:
         No return
     '''
-    hyperparametrs = parse_private()
-    
-    NCORES    = int(hyperparametrs["NCORES"])
-    NWORKERS  = int(hyperparametrs["NWORKERS"])
+     
+    NCORES    = ncores
+    NWORKERS  = nworkers
     FILE_PATH = storage
 
     # move exp file
@@ -221,7 +204,7 @@ def omics(expid: str, assembly_threshold: str , antigen_class: str, antigen: str
                 print(f"{bcolors.OKCYAN}U r not alone. Sorry but u have to w8.\nChill a bit!{bcolors.ENDC}") 
                 exit()
 
-    match_exp_df = create_matching_expirement_df(que, "experimentList.tab", options)
+    match_exp_df = create_matching_expirement_df("experimentList.tab", options)
 
     create_sorted_bed_file(que, f"allPeaks_light.{assembly}.{assembly_threshold}.bed", match_exp_df)
     que.shutdown()
