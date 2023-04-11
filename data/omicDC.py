@@ -158,7 +158,6 @@ def omics(expid: str = None, assembly: str = 'hg38', assembly_threshold: str = '
         
     
     options = {
-        #Parse arguments from cmd line to special dict
         "id"                :   expid,
         "Genome assembly"   :   assembly,
         "Antigen class"     :   antigen_class,
