@@ -109,6 +109,7 @@ def add_sorted_bed_2_file(
 
 def create_sorted_bed_file(
         que,
+        storage,
         filename,
         match_exp_df
     ):
@@ -121,7 +122,7 @@ def create_sorted_bed_file(
     matching_experiments = list(match_exp_df.loc[:,'id'])
 
     df = dd.read_csv(   
-                FILE_PATH + filename,
+                storage + filename,
                 sep = "\t", 
                 names = ['chr', 'begin', 'end', 'id', 'score'],
                 blocksize = '50mb'
@@ -143,7 +144,7 @@ def create_sorted_bed_file(
     progress(a, notebook = False)
 
 
-def omics(expid: str, assembly_threshold: str , antigen_class: str, antigen: str, cell_type: str, cell: str, storage: Path = './',  assembly: str = 'hg38', ncores: int = 2, nworkers: int = 4):
+def omics(expid: str = None, assembly: str = 'hg38', assembly_threshold: str = None , antigen_class: str = None, antigen: str = None, cell_type: str = None, cell: str = None, storage: Path = './', output_path: Path = './' , ncores: int = 2, nworkers: int = 4):
     '''
     Function to create omics data from chip-atlas database.
     Arguments:
