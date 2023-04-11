@@ -160,7 +160,25 @@ def parse_private():
     return(d)
 
 
-def omics(expid: str, assembly: str, assembly_threshold: str , antigen_class: str, antigen: str, cell_type: str, cell: str, storage: Path):
+def omics(expid: str, assembly_threshold: str , antigen_class: str, antigen: str, cell_type: str, cell: str, storage: Path = './',  assembly: str = 'hg38',):
+    '''
+    Function to create omics data from chip-atlas database.
+    Arguments:
+        expid: str of experiments Id
+        assembly_threshold: str 
+        antigen_class: str
+        antigen: str
+        cell_type: str
+        cell: str
+        storage: Path, default is './'
+        assembly: str, default is 'hg38'
+
+    Outputs:
+        In Path functions creates .csv file with omic data
+
+    Returns:
+        No return
+    '''
     hyperparametrs = parse_private()
     
     NCORES    = int(hyperparametrs["NCORES"])
