@@ -1,3 +1,5 @@
+from pathlib import Path
+
 import pandas as pd
 import numpy as np
 import dask.dataframe as dd
@@ -17,7 +19,7 @@ import warnings
 
 #defines
 #TODO Worker num and cores num
-PRIVATE_PATH = "private_omicON.txt"
+PRIVATE_PATH = "/home/avoitetskii/private_omicON.txt"
 
 class bcolors:
     HEADER = '\033[95m'
@@ -40,12 +42,11 @@ def create_matching_expirement_df(
 
     # match_exp_df - df for matching experiments
     match_exp_df = pd.read_csv(
-                                FILE_PATH + filename,
-                                sep = '\t', 
-                                names = ['id', 'Genome assembly', 'Antigen class', 'Antigen', 'Cell type class', 'Cell type'],
-                                usecols=range(6)
-                            )
-    
+                    FILE_PATH + filename,
+                    sep = '\t', 
+                    names = ['id', 'Genome assembly', 'Antigen class', 'Antigen', 'Cell type class', 'Cell type'],
+                    usecols=range(6)
+                )
     if args.verbose:
         print("Find file " +  FILE_PATH + filename)
 
@@ -120,11 +121,11 @@ def create_sorted_bed_file(
     matching_experiments = list(match_exp_df.loc[:,'id'])
 
     df = dd.read_csv(   
-                        FILE_PATH + filename,
-                        sep = "\t", 
-                        names = ['chr', 'begin', 'end', 'id', 'score'],
-                        blocksize = '50mb'
-                    )
+                FILE_PATH + filename,
+                sep = "\t", 
+                names = ['chr', 'begin', 'end', 'id', 'score'],
+                blocksize = '50mb'
+                )
 
     open(path_2_sorted_file, mode = 'w').close()  # Creating empty .csv for editing
     os.chmod(path_2_sorted_file, 33279)
@@ -157,3 +158,77 @@ def parse_private():
             if args.verbose:
                 print(key, ':', val)
     return(d)
+
+
+def omics(expid: str, assembly: str, assembly_threshold: str , antigen_class: str, antigen: str, cell_type: str, cell: str, storage: Path):
+    hyperparametrs = parse_private()
+    
+    NCORES    = int(hyperparametrs["NCORES"])
+    NWORKERS  = int(hyperparametrs["NWORKERS"])
+    FILE_PATH = storage
+
+    # move exp file
+    if not os.path.isfile(FILE_PATH + f"/experimentList.tab"):
+        os.replace("./data/storage/experimentList.tab.gz", FILE_PATH)
+        os.system(f"gunzip {FILE_PATH}/experimentList.tab.gz")
+
+    if not os.path.isfile(FILE_PATH + f"/allPeaks_light.{assembly}.{assembly_threshold}.bed"):
+        wget.download(
+                        f"https://chip-atlas.dbcls.jp/data/hg38/allPeaks_light/\
+                        allPeaks_light.{assembly}.{assembly_threshold}.bed.gz",
+                        FILE_PATH
+                      )
+        os.system(f"gunzip {FILE_PATH}/allPeaks_light.{assembly}.{assembly_threshold}.bed.gz")
+        
+    
+    options = {
+        #Parse arguments from cmd line to special dict
+        "id"                :   expid,
+        "Genome assembly"   :   assembly,
+        "Antigen class"     :   antigen_class,
+        "Antigen"           :   antigen,
+        "Cell type class"   :   cell_type,
+        "Cell type"         :   cell
+    }
+
+    for key in options.keys():
+        if options[key]:
+            options[key] = options[key].replace('_', ' ')
+    
+    with warnings.catch_warnings(record=True) as caught_warnings:
+        warnings.simplefilter("always")
+        que = Client(n_workers=NCORES, threads_per_worker=NWORKERS)
+        for warn in caught_warnings:
+            if str(warn.message).find('Port 8787 is already in use') != -1:
+                print(f"{bcolors.OKCYAN}U r not alone. Sorry but u have to w8.\nChill a bit!{bcolors.ENDC}") 
+                exit()
+
+    match_exp_df = create_matching_expirement_df(que, "experimentList.tab", options)
+
+    create_sorted_bed_file(que, f"allPeaks_light.{assembly}.{assembly_threshold}.bed", match_exp_df)
+    que.shutdown()
+    
+    match_exp_df.to_csv(
+                        "result.csv.gz",
+                        index=False, 
+                        compression="gzip"
+                        )
+    
+    os.remove(FILE_PATH + "filtred_" + f"allPeaks_light.{assembly}.{assembly_threshold}.bed" + ".csv")
+
+
+def assembly(tag: str, saveto: Path, *_, force: bool = False):
+    supported = {"GRCh38", "GRCm39"}
+    assert tag in supported, f"Requested assembly ({tag}) is not among supported: {','.join(supported)}"
+
+    # TODO: clearer error message
+    assert saveto.name.endswith(".gz"), "Loaded assemblies must be saved as indexed & bgzip-ed files"
+
+    # Use GENCODE:
+    # After downloading, unzip -> bgzip -> samtools faidx files
+    # GRCh38 - https://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_human/release_43/GRCh38.primary_assembly.genome.fa.gz
+    # GRCm39 - https://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_mouse/release_M32/GRCm39.primary_assembly.genome.fa.gz
+    raise NotImplementedError()
+
+
+__all__ = ["omics", "assembly"]
