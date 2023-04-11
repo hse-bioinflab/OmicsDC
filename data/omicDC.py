@@ -16,11 +16,6 @@ import multiprocessing
 import os
 import warnings
 
-
-#defines
-#TODO Worker num and cores num
-PRIVATE_PATH = "/home/avoitetskii/private_omicON.txt"
-
 class bcolors:
     HEADER = '\033[95m'
     OKBLUE = '\033[94m'
