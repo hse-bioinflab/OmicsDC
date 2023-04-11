@@ -90,7 +90,7 @@ def create_sorted_bed_file(
                 storage + filename,
                 sep = "\t", 
                 names = ['chr', 'begin', 'end', 'id', 'score'],
-                blocksize = '50mb'
+                blocksize = '100mb'
                 )
 
     open(path_2_sorted_file, mode = 'w').close()  # Creating empty .csv for editing
@@ -175,11 +175,8 @@ def omics(expid: str = None, assembly: str = 'hg38', assembly_threshold: str = N
     create_sorted_bed_file(que, f"allPeaks_light.{assembly}.{assembly_threshold}.bed", match_exp_df)
     que.shutdown()
     
-    match_exp_df.to_csv(
-                        "result.csv.gz",
-                        index=False, 
-                        compression="gzip"
-                        )
+    os.replace("./data/storage/experimentList.tab.gz", FILE_PATH)
+    os.system(f"gunzip {FILE_PATH}/experimentList.tab.gz")
     
     os.remove(FILE_PATH + "filtred_" + f"allPeaks_light.{assembly}.{assembly_threshold}.bed")
 
