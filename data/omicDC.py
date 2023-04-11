@@ -148,9 +148,8 @@ def omics(expid: str = None, assembly: str = 'hg38', assembly_threshold: str = '
         wget.download(
                         f"https://chip-atlas.dbcls.jp/data/hg38/allPeaks_light/allPeaks_light.{assembly}.{assembly_threshold}.bed.gz",
                         storage
-                      )
+                    )
         os.system(f"gunzip {storage}/allPeaks_light.{assembly}.{assembly_threshold}.bed.gz")
-        
     
     options = {
         "id"                :   expid,
