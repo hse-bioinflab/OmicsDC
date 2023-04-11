@@ -42,7 +42,7 @@ def create_matching_expirement_df(
 
     # match_exp_df - df for matching experiments
     match_exp_df = pd.read_csv(
-                    filepath
+                    filepath,
                     sep = '\t', 
                     names = ['id', 'Genome assembly', 'Antigen class', 'Antigen', 'Cell type class', 'Cell type'],
                     usecols=range(6)
@@ -109,7 +109,7 @@ def create_sorted_bed_file(
     progress(a)
 
 
-def omics(expid: str = None, assembly: str = 'hg38', assembly_threshold: str = '05' , antigen_class: str = None, antigen: str = None, cell_type: str = None, cell: str = None, storage: Path = './data/storage/', output_path: Path = './' , ncores: int = 2, nworkers: int = 4, verbose: bool = True):
+def omics(expid: str = None, assembly: str = 'hg38', assembly_threshold: str = '05' , antigen_class: str = None, antigen: str = None, cell_type: str = None, cell: str = None, storage: Path = './data/storage', output_path: Path = './' , ncores: int = 2, nworkers: int = 4, verbose: bool = True):
     '''
     Function to create omics data from chip-atlas database.
     Arguments:
@@ -119,7 +119,7 @@ def omics(expid: str = None, assembly: str = 'hg38', assembly_threshold: str = '
         antigen: str
         cell_type: str
         cell: str
-        storage: Path, default is './data/storage/'
+        storage: Path, default is './data/storage'
         output_path: Path, default is './'
         assembly: str, default is 'hg38'
         ncores and nworkers: int, multithread parametrs
@@ -134,19 +134,18 @@ def omics(expid: str = None, assembly: str = 'hg38', assembly_threshold: str = '
      
     NCORES    = ncores
     NWORKERS  = nworkers
-    FILE_PATH = storage
-
+    
     # move exp file
-    if not os.path.isfile(FILE_PATH + "/experimentList.tab"):
-        os.system(f"gunzip {FILE_PATH}/experimentList.tab.gz")
+    if not os.path.isfile(storage + "/experimentList.tab"):
+        os.system(f"gunzip {storage}/experimentList.tab.gz")
 
-    if not os.path.isfile(FILE_PATH + f"/allPeaks_light.{assembly}.{assembly_threshold}.bed"):
+    if not os.path.isfile(storage + f"/allPeaks_light.{assembly}.{assembly_threshold}.bed"):
         wget.download(
                         f"https://chip-atlas.dbcls.jp/data/hg38/allPeaks_light/\
                         allPeaks_light.{assembly}.{assembly_threshold}.bed.gz",
-                        FILE_PATH
+                        storage
                       )
-        os.system(f"gunzip {FILE_PATH}/allPeaks_light.{assembly}.{assembly_threshold}.bed.gz")
+        os.system(f"gunzip {storage}/allPeaks_light.{assembly}.{assembly_threshold}.bed.gz")
         
     
     options = {
@@ -171,12 +170,12 @@ def omics(expid: str = None, assembly: str = 'hg38', assembly_threshold: str = '
                 print(f"{bcolors.OKCYAN}U r not alone. Sorry but u have to w8.\nChill a bit!{bcolors.ENDC}") 
                 exit()
 
-    match_exp_df = create_matching_expirement_df(FILE_PATH + "experimentList.tab", options)
+    match_exp_df = create_matching_expirement_df(storage + "experimentList.tab", options)
 
     create_sorted_bed_file(que, f"allPeaks_light.{assembly}.{assembly_threshold}.bed", match_exp_df)
     que.shutdown()
     
-    os.replace(FILE_PATH + f"filtred_allPeaks_light.{assembly}.{assembly_threshold}.bed", output_path)
+    os.replace(storage + f"filtred_allPeaks_light.{assembly}.{assembly_threshold}.bed", output_path)
     os.system(f"gzip {output_path}/filtred_allPeaks_light.{assembly}.{assembly_threshold}.bed.gz")
 
 
