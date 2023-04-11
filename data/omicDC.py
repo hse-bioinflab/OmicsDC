@@ -124,7 +124,7 @@ def create_sorted_bed_file(
                 FILE_PATH + filename,
                 sep = "\t", 
                 names = ['chr', 'begin', 'end', 'id', 'score'],
-                blocksize = '50mb'
+                blocksize = '100mb'
                 )
 
     open(path_2_sorted_file, mode = 'w').close()  # Creating empty .csv for editing
@@ -210,7 +210,7 @@ def omics(expid: str, assembly_threshold: str , antigen_class: str, antigen: str
     que.shutdown()
     
     match_exp_df.to_csv(
-                        "result.csv.gz",
+                        "result.bed.gz",
                         index=False, 
                         compression="gzip"
                         )
