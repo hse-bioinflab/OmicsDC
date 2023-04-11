@@ -144,9 +144,6 @@ def omics(expid: str = None, assembly: str = 'hg38', assembly_threshold: str = '
     del_slash(storage)
     del_slash(output_path)
 
-    NCORES    = ncores
-    NWORKERS  = nworkers
-    
     # move exp file
     if not os.path.isfile(storage + "/experimentList.tab"):
         os.system(f"gunzip {storage}/experimentList.tab.gz")
@@ -176,7 +173,7 @@ def omics(expid: str = None, assembly: str = 'hg38', assembly_threshold: str = '
     
     with warnings.catch_warnings(record=True) as caught_warnings:
         warnings.simplefilter("always")
-        que = Client(n_workers=NCORES, threads_per_worker=NWORKERS)
+        que = Client(n_workers=ncores, threads_per_worker=nworkers)
         for warn in caught_warnings:
             if str(warn.message).find('Port 8787 is already in use') != -1:
                 print(f"{bcolors.OKCYAN}U r not alone. Sorry but u have to w8.\nChill a bit!{bcolors.ENDC}") 
