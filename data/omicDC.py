@@ -58,41 +58,6 @@ def create_matching_expirement_df(
     return match_exp_df
 
 
-def add_user_bed_markers(
-        que,
-        filename
-    ):
-    """ Merging sorted df with user`s .bed file as two additional cols
-        Saving onli rows with several chr.
-        Creating new 'intersect' column with booleans.
-        Returning df with only intersected"""
-    path_2_sorted_file_with_user_bed = FILE_PATH + "filtred_and_bed" + filename + ".csv"
-
-    df = dd.read_csv(
-        FILE_PATH + "filtred_" + filename + ".csv", 
-        header=None, 
-        sep=',',
-        names = ['chr', 'begin', 'end', 'id', 'score'],
-        blocksize = '10mb'
-        )
-    
-    process_list = []
-    
-    df.set_index('chr')
-
-    for part in range(df.npartitions):
-        process_list.append(que.submit(
-                                make_intersect,
-                                df,
-                                part,
-                                path_2_sorted_file_with_user_bed
-                                )) 
-    
-    a = [process.result() for process in process_list]
-
-    return df.compute()
-
-
 def add_sorted_bed_2_file( 
             filename,
             df,
@@ -209,11 +174,8 @@ def omics(expid: str, assembly_threshold: str , antigen_class: str, antigen: str
     create_sorted_bed_file(que, f"allPeaks_light.{assembly}.{assembly_threshold}.bed", match_exp_df)
     que.shutdown()
     
-    match_exp_df.to_csv(
-                        "result.bed.gz",
-                        index=False, 
-                        compression="gzip"
-                        )
+    os.replace("./data/storage/experimentList.tab.gz", FILE_PATH)
+    os.system(f"gunzip {FILE_PATH}/experimentList.tab.gz")
     
     os.remove(FILE_PATH + "filtred_" + f"allPeaks_light.{assembly}.{assembly_threshold}.bed" + ".csv")
 
