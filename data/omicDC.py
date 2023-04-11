@@ -58,41 +58,6 @@ def create_matching_expirement_df(
     return match_exp_df
 
 
-def add_user_bed_markers(
-        que,
-        filename
-    ):
-    """ Merging sorted df with user`s .bed file as two additional cols
-        Saving onli rows with several chr.
-        Creating new 'intersect' column with booleans.
-        Returning df with only intersected"""
-    path_2_sorted_file_with_user_bed = FILE_PATH + "filtred_and_bed" + filename + ".csv"
-
-    df = dd.read_csv(
-        FILE_PATH + "filtred_" + filename + ".csv", 
-        header=None, 
-        sep=',',
-        names = ['chr', 'begin', 'end', 'id', 'score'],
-        blocksize = '10mb'
-        )
-    
-    process_list = []
-    
-    df.set_index('chr')
-
-    for part in range(df.npartitions):
-        process_list.append(que.submit(
-                                make_intersect,
-                                df,
-                                part,
-                                path_2_sorted_file_with_user_bed
-                                )) 
-    
-    a = [process.result() for process in process_list]
-
-    return df.compute()
-
-
 def add_sorted_bed_2_file( 
             filename,
             df,
@@ -144,7 +109,7 @@ def create_sorted_bed_file(
     progress(a, notebook = False)
 
 
-def omics(expid: str = None, assembly: str = 'hg38', assembly_threshold: str = None , antigen_class: str = None, antigen: str = None, cell_type: str = None, cell: str = None, storage: Path = './', output_path: Path = './' , ncores: int = 2, nworkers: int = 4):
+def omics(expid: str = None, assembly: str = 'hg38', assembly_threshold: str = None , antigen_class: str = None, antigen: str = None, cell_type: str = None, cell: str = None, storage: Path = './data/storage/', output_path: Path = './' , ncores: int = 2, nworkers: int = 4):
     '''
     Function to create omics data from chip-atlas database.
     Arguments:
@@ -154,7 +119,7 @@ def omics(expid: str = None, assembly: str = 'hg38', assembly_threshold: str = N
         antigen: str
         cell_type: str
         cell: str
-        storage: Path, default is './'
+        storage: Path, default is './data/storage/''
         assembly: str, default is 'hg38'
         ncores and nworkers: int, multithread parametrs
 
@@ -216,7 +181,7 @@ def omics(expid: str = None, assembly: str = 'hg38', assembly_threshold: str = N
                         compression="gzip"
                         )
     
-    os.remove(FILE_PATH + "filtred_" + f"allPeaks_light.{assembly}.{assembly_threshold}.bed" + ".csv")
+    os.remove(FILE_PATH + "filtred_" + f"allPeaks_light.{assembly}.{assembly_threshold}.bed")
 
 
 def assembly(tag: str, saveto: Path, *_, force: bool = False):
