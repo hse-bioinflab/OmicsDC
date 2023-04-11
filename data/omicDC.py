@@ -141,8 +141,8 @@ def omics(expid: str = None, assembly: str = 'hg38', assembly_threshold: str = '
         No return
     '''
     
-    del_slash(storage)
-    del_slash(output_path)
+    storage = del_slash(storage)
+    output_path = del_slash(output_path)
 
     # move exp file
     if not os.path.isfile(storage + "/experimentList.tab"):
