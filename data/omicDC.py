@@ -141,8 +141,8 @@ def omics(expid: str = None, assembly: str = 'hg38', assembly_threshold: str = '
         No return
     '''
     
-    del_slash(storage)
-    del_slash(output_path)
+    storage = del_slash(storage)
+    output_path = del_slash(output_path)
 
     # move exp file
     if not os.path.isfile(storage + "/experimentList.tab"):
@@ -179,12 +179,12 @@ def omics(expid: str = None, assembly: str = 'hg38', assembly_threshold: str = '
                 print(f"{bcolors.OKCYAN}U r not alone. Sorry but u have to w8.\nChill a bit!{bcolors.ENDC}") 
                 exit()
 
-    match_exp_df = create_matching_expirement_df(FILE_PATH + "/experimentList.tab", options)
+    match_exp_df = create_matching_expirement_df(storage + "/experimentList.tab", options)
 
     create_sorted_bed_file(que, f"allPeaks_light.{assembly}.{assembly_threshold}.bed", match_exp_df)
     que.shutdown()
     
-    os.replace(FILE_PATH + f"/filtred_allPeaks_light.{assembly}.{assembly_threshold}.bed", output_path)
+    os.replace(storage + f"/filtred_allPeaks_light.{assembly}.{assembly_threshold}.bed", output_path)
     os.system(f"gzip {output_path}/filtred_allPeaks_light.{assembly}.{assembly_threshold}.bed.gz")
 
 
