@@ -35,7 +35,8 @@ class bcolors:
 
 def create_matching_expirement_df(
             filepath, 
-            options
+            options,
+            verbose
         ):   
     """ Function to return expirement names df"""
 
@@ -46,7 +47,7 @@ def create_matching_expirement_df(
                     names = ['id', 'Genome assembly', 'Antigen class', 'Antigen', 'Cell type class', 'Cell type'],
                     usecols=range(6)
                 )
-    if args.verbose:
+    if verbose:
         print("Find file " +  filepath)
 
     for key in options.keys():
@@ -108,7 +109,7 @@ def create_sorted_bed_file(
     progress(a)
 
 
-def omics(expid: str = None, assembly: str = 'hg38', assembly_threshold: str = '05' , antigen_class: str = None, antigen: str = None, cell_type: str = None, cell: str = None, storage: Path = './data/storage/', output_path: Path = './' , ncores: int = 2, nworkers: int = 4):
+def omics(expid: str = None, assembly: str = 'hg38', assembly_threshold: str = '05' , antigen_class: str = None, antigen: str = None, cell_type: str = None, cell: str = None, storage: Path = './data/storage/', output_path: Path = './' , ncores: int = 2, nworkers: int = 4, verbose: bool = True):
     '''
     Function to create omics data from chip-atlas database.
     Arguments:
@@ -122,6 +123,7 @@ def omics(expid: str = None, assembly: str = 'hg38', assembly_threshold: str = '
         output_path: Path, default is './'
         assembly: str, default is 'hg38'
         ncores and nworkers: int, multithread parametrs
+        verbose: bool
 
     Outputs:
         In Path functions creates .csv file with omic data
