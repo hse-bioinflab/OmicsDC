@@ -114,10 +114,6 @@ def del_slash(path):
     return path[:-1] if path[-1] == '/' else path
 
 
-def del_slash(path):
-    return path[:-1] if path[-1] == '/' else path
-
-
 def omics(expid: str = None, assembly: str = 'hg38', assembly_threshold: str = '05' , antigen_class: str = None, antigen: str = None, cell_type: str = None, cell: str = None, storage: Path = 'storage', output_path: Path = './' , ncores: int = 2, nworkers: int = 4, verbose: bool = True):
     '''
     Function to create omics data from chip-atlas database.
@@ -158,7 +154,6 @@ def omics(expid: str = None, assembly: str = 'hg38', assembly_threshold: str = '
         
     
     options = {
-        #Parse arguments from cmd line to special dict
         "id"                :   expid,
         "Genome assembly"   :   assembly,
         "Antigen class"     :   antigen_class,
