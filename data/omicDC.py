@@ -34,21 +34,21 @@ class bcolors:
 
 
 def create_matching_expirement_df(
-            que, 
-            filename, 
-            options
+            filepath, 
+            options,
+            verbose
         ):   
-    """ Function to return expirement names list"""
+    """ Function to return expirement names df"""
 
     # match_exp_df - df for matching experiments
     match_exp_df = pd.read_csv(
-                    FILE_PATH + filename,
+                    filepath
                     sep = '\t', 
                     names = ['id', 'Genome assembly', 'Antigen class', 'Antigen', 'Cell type class', 'Cell type'],
                     usecols=range(6)
                 )
-    if args.verbose:
-        print("Find file " +  FILE_PATH + filename)
+    if verbose:
+        print("Find file " +  filepath)
 
     for key in options.keys():
         if options[key]:
@@ -80,7 +80,7 @@ def create_sorted_bed_file(
     ):
     """Create big .csv table with every finded match"""
 
-    path_2_sorted_file = FILE_PATH + "filtred_" + filename + ".csv"
+    path_2_sorted_file = storage + "filtred_" + filename + ".bed"
 
     process_list = []
 
@@ -106,10 +106,10 @@ def create_sorted_bed_file(
                                 ))
     
     a = [process.result() for process in process_list]
-    progress(a, notebook = False)
+    progress(a)
 
 
-def omics(expid: str = None, assembly: str = 'hg38', assembly_threshold: str = '05', antigen_class: str = None, antigen: str = None, cell_type: str = None, cell: str = None, storage: Path = './data/storage/', output_path: Path = './' , ncores: int = 2, nworkers: int = 4):
+def omics(expid: str = None, assembly: str = 'hg38', assembly_threshold: str = '05' , antigen_class: str = None, antigen: str = None, cell_type: str = None, cell: str = None, storage: Path = './data/storage/', output_path: Path = './' , ncores: int = 2, nworkers: int = 4, verbose: bool = True):
     '''
     Function to create omics data from chip-atlas database.
     Arguments:
@@ -119,9 +119,11 @@ def omics(expid: str = None, assembly: str = 'hg38', assembly_threshold: str = '
         antigen: str
         cell_type: str
         cell: str
-        storage: Path, default is './data/storage/''
+        storage: Path, default is './data/storage/'
+        output_path: Path, default is './'
         assembly: str, default is 'hg38'
         ncores and nworkers: int, multithread parametrs
+        verbose: bool
 
     Outputs:
         In Path functions creates .csv file with omic data
@@ -169,7 +171,7 @@ def omics(expid: str = None, assembly: str = 'hg38', assembly_threshold: str = '
                 print(f"{bcolors.OKCYAN}U r not alone. Sorry but u have to w8.\nChill a bit!{bcolors.ENDC}") 
                 exit()
 
-    match_exp_df = create_matching_expirement_df(FILE_PATH + "/experimentList.tab", options)
+    match_exp_df = create_matching_expirement_df(FILE_PATH + "experimentList.tab", options)
 
     create_sorted_bed_file(que, f"allPeaks_light.{assembly}.{assembly_threshold}.bed", match_exp_df)
     que.shutdown()
