@@ -109,7 +109,7 @@ def create_sorted_bed_file(
     progress(a, notebook = False)
 
 
-def omics(expid: str = None, assembly: str = 'hg38', assembly_threshold: str = None , antigen_class: str = None, antigen: str = None, cell_type: str = None, cell: str = None, storage: Path = './data/storage/', output_path: Path = './' , ncores: int = 2, nworkers: int = 4):
+def omics(expid: str = None, assembly: str = 'hg38', assembly_threshold: str = '05', antigen_class: str = None, antigen: str = None, cell_type: str = None, cell: str = None, storage: Path = './data/storage/', output_path: Path = './' , ncores: int = 2, nworkers: int = 4):
     '''
     Function to create omics data from chip-atlas database.
     Arguments:
@@ -175,10 +175,8 @@ def omics(expid: str = None, assembly: str = 'hg38', assembly_threshold: str = N
     create_sorted_bed_file(que, f"allPeaks_light.{assembly}.{assembly_threshold}.bed", match_exp_df)
     que.shutdown()
     
-    os.replace("./data/storage/experimentList.tab.gz", FILE_PATH)
-    os.system(f"gunzip {FILE_PATH}/experimentList.tab.gz")
-    
-    os.remove(FILE_PATH + "filtred_" + f"allPeaks_light.{assembly}.{assembly_threshold}.bed")
+    os.replace(FILE_PATH + f"filtred_allPeaks_light.{assembly}.{assembly_threshold}.bed", output_path)
+    os.system(f"gzip {output_path}/filtred_allPeaks_light.{assembly}.{assembly_threshold}.bed.gz")
 
 
 def assembly(tag: str, saveto: Path, *_, force: bool = False):
