@@ -146,8 +146,7 @@ def omics(expid: str = None, assembly: str = 'hg38', assembly_threshold: str = '
 
     if not os.path.isfile(storage + f"/allPeaks_light.{assembly}.{assembly_threshold}.bed"):
         wget.download(
-                        f"https://chip-atlas.dbcls.jp/data/hg38/allPeaks_light/\
-                        allPeaks_light.{assembly}.{assembly_threshold}.bed.gz",
+                        f"https://chip-atlas.dbcls.jp/data/hg38/allPeaks_light/allPeaks_light.{assembly}.{assembly_threshold}.bed.gz",
                         storage
                       )
         os.system(f"gunzip {storage}/allPeaks_light.{assembly}.{assembly_threshold}.bed.gz")
