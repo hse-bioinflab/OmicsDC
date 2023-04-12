@@ -1,9 +1,5 @@
 from pathlib import Path
-
-
-def omics(expid: str, assembly: str, antigen_class: str, antigen: str, cell_type, cell: str, storage: Path):
-    # TODO: think about parameters naming, order, etc & write docs for each parameter
-    raise NotImplementedError()
+from loader.omicDC import omics
 
 
 def assembly(tag: str, saveto: Path, *_, force: bool = False):

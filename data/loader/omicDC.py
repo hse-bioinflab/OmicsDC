@@ -140,9 +140,9 @@ def omics(expid: str = None, assembly: str = 'hg38', assembly_threshold: str = '
         os.system(f"gunzip {storage}/experimentList.tab.gz")
 
     if not os.path.isfile(storage + f"/allPeaks_light.{assembly}.{assembly_threshold}.bed"):
-        wget.download(
-                        f"https://chip-atlas.dbcls.jp/data/hg38/allPeaks_light/allPeaks_light.{assembly}.{assembly_threshold}.bed.gz",
-                        storage
+        print("new wget")
+        wget.download(f"https://chip-atlas.dbcls.jp/data/hg38/allPeaks_light/allPeaks_light.{assembly}.{assembly_threshold}.bed.gz",
+                      storage
                     )
         os.system(f"gunzip {storage}/allPeaks_light.{assembly}.{assembly_threshold}.bed.gz")
     
@@ -174,20 +174,3 @@ def omics(expid: str = None, assembly: str = 'hg38', assembly_threshold: str = '
     
     os.replace(storage + f"/filtred_allPeaks_light.{assembly}.{assembly_threshold}.bed", output_path)
     os.system(f"gzip {output_path}/filtred_allPeaks_light.{assembly}.{assembly_threshold}.bed.gz")
-
-
-def assembly(tag: str, saveto: Path, *_, force: bool = False):
-    supported = {"GRCh38", "GRCm39"}
-    assert tag in supported, f"Requested assembly ({tag}) is not among supported: {','.join(supported)}"
-
-    # TODO: clearer error message
-    assert saveto.name.endswith(".gz"), "Loaded assemblies must be saved as indexed & bgzip-ed files"
-
-    # Use GENCODE:
-    # After downloading, unzip -> bgzip -> samtools faidx files
-    # GRCh38 - https://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_human/release_43/GRCh38.primary_assembly.genome.fa.gz
-    # GRCm39 - https://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_mouse/release_M32/GRCm39.primary_assembly.genome.fa.gz
-    raise NotImplementedError()
-
-
-__all__ = ["omics", "assembly"]
