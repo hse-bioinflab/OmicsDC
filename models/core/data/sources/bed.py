@@ -26,9 +26,9 @@ class BED(DataSource):
 
         self.index = dict(self.index)
 
-    def fetch(self, contig: str, strand: Literal["+", "-", "."], start: int, end: int) -> np.ndarray:
+    def fetch(self, contig: str, strand: Literal['+', '-', '.'], start: int, end: int) -> np.ndarray:
         if start > end:
-            raise ValueError(f"Start must be <= end, got {start} > {end}")
+            raise ValueError(f'Start must be <= end, got {start} > {end}')
 
         result = np.zeros(end - start, dtype=np.float32)
         if (contig, strand) not in self.index:

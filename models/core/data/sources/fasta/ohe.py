@@ -7,23 +7,23 @@ from ._parse import parse as _parse
 from ..data_source import DataSource
 
 DEFAULT_ONE_HOT_ENCODING = (
-    ("A", [0]),
-    ("C", [1]),
-    ("G", [2]),
-    ("T", [3]),
-    ("U", [3]),
-    ("M", [0, 1]),
-    ("R", [0, 2]),
-    ("W", [0, 3]),
-    ("S", [1, 2]),
-    ("Y", [1, 3]),
-    ("K", [2, 3]),
-    ("V", [0, 1, 2]),
-    ("H", [0, 1, 3]),
-    ("D", [0, 2, 3]),
-    ("B", [1, 2, 3]),
-    ("X", [0, 1, 2, 3]),
-    ("N", [0, 1, 2, 3]),
+    ('A', [0]),
+    ('C', [1]),
+    ('G', [2]),
+    ('T', [3]),
+    ('U', [3]),
+    ('M', [0, 1]),
+    ('R', [0, 2]),
+    ('W', [0, 3]),
+    ('S', [1, 2]),
+    ('Y', [1, 3]),
+    ('K', [2, 3]),
+    ('V', [0, 1, 2]),
+    ('H', [0, 1, 3]),
+    ('D', [0, 2, 3]),
+    ('B', [1, 2, 3]),
+    ('X', [0, 1, 2, 3]),
+    ('N', [0, 1, 2, 3]),
 )
 
 NucleotidesOHE = dict[str, list[int]]
@@ -40,22 +40,22 @@ class OneHotEncoder(DataSource):
         # Prepare the mapping matrix
         self.mapping = self._prepare_mapping(mapping)
 
-    def fetch(self, contig: str, strand: Literal["+", "-", "."], start: int, end: int) -> np.ndarray:
-        if strand not in {"+", "."}:
-            raise ValueError("Reverse strand is not supported")
+    def fetch(self, contig: str, strand: Literal['+', '-', '.'], start: int, end: int) -> np.ndarray:
+        if strand not in {'+', '.'}:
+            raise ValueError('Reverse strand is not supported')
 
         if contig not in self.sequences:
-            raise ValueError(f"Contig {contig} was not present in the {self.fasta} fasta file.")
+            raise ValueError(f'Contig {contig} was not present in the {self.fasta} fasta file.')
 
         sequence = self.sequences[contig]
         seqlen = len(sequence)
         is_within_sequence = 0 <= start <= end <= seqlen
         if not is_within_sequence:
-            error = f"Requested intervals is outside of the sequence with len {seqlen}: {contig}:{start}-{end}"
+            error = f'Requested intervals is outside of the sequence with len {seqlen}: {contig}:{start}-{end}'
             raise ValueError(error)
 
         sequence = sequence[start: end]
-        sequence = np.fromiter(sequence.encode("ASCII"), dtype=np.uint8, count=(end - start))
+        sequence = np.fromiter(sequence.encode('ASCII'), dtype=np.uint8, count=(end - start))
         # One-hot-encoding
         encoded = self.mapping[:, sequence]
         return encoded
@@ -75,7 +75,7 @@ class OneHotEncoder(DataSource):
         ohe = np.zeros((4, 255), dtype=np.float32)
         for letter, indices in mapping.items():
             if not isinstance(letter, str) or len(letter) != 1:
-                raise ValueError("Incorrect mapping format")
+                raise ValueError('Incorrect mapping format')
             upper, lower = ord(letter.upper()), ord(letter.lower())
             weight = 1 / len(indices)
             for ind in indices:

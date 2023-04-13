@@ -6,5 +6,5 @@ import numpy as np
 
 class DataSource(ABC):
     @abstractmethod
-    def fetch(self, contig: str, strand: Literal["+", "-", "."], start: int, end: int) -> np.ndarray:
+    def fetch(self, contig: str, strand: Literal['+', '-', '.'], start: int, end: int) -> np.ndarray:
         raise NotImplementedError()

@@ -15,7 +15,7 @@
 #
 # # defines
 #
-# PRIVATE_PATH = "/home/avoitetskii/private_omicON.txt"
+# PRIVATE_PATH = '/home/avoitetskii/private_omicON.txt'
 #
 #
 # class bcolors:
@@ -46,7 +46,7 @@
 #     '--assembly',
 #     '-g',
 #     type=str,
-#     default="hg38",
+#     default='hg38',
 #     help='Genome assembly'
 # )
 #
@@ -87,7 +87,7 @@
 #     '--path',
 #     '-p',
 #     type=str,
-#     default="~",
+#     default='~',
 #     help='Path to export files'
 # )
 #
@@ -114,7 +114,7 @@
 #         filename,
 #         options
 # ):
-#     """ Function to return expirement names list"""
+#     ''' Function to return expirement names list'''
 #
 #     # match_exp_df - df for matching experiments
 #     match_exp_df = pd.read_csv(
@@ -124,7 +124,7 @@
 #         usecols=range(6)
 #     )
 #     if args.verbose:
-#         print("Find file " + FILE_PATH + filename)
+#         print('Find file ' + FILE_PATH + filename)
 #
 #     # Checking is it Bed
 #     for key in options.keys():
@@ -148,8 +148,8 @@
 #         matching_experiments,
 #         bed_file_path
 # ):
-#     """ Function to add lines to .csv file from part of sorted .bed files"""
-#     print("its is coming")
+#     ''' Function to add lines to .csv file from part of sorted .bed files'''
+#     print('its is coming')
 #     part = df.partitions[num]
 #
 #     part = part.loc[part['id'].isin(matching_experiments)]
@@ -179,11 +179,11 @@
 #
 #
 # def im_not_alone(filename):
-#     """Function to check if only one user making executions"""
+#     '''Function to check if only one user making executions'''
 #     directory = os.listdir('./')
 #     is_multiuser = 0
 #     for f in directory:
-#         if f.find("filtred_") != -1:
+#         if f.find('filtred_') != -1:
 #             is_multiuser = 1
 #     return is_multiuser
 #
@@ -194,9 +194,9 @@
 #         match_exp_df,
 #         bed_file_path
 # ):
-#     """Create big .csv table with every finded match"""
+#     '''Create big .csv table with every finded match'''
 #
-#     path_2_sorted_file = FILE_PATH + "filtred_" + filename + ".csv"
+#     path_2_sorted_file = FILE_PATH + 'filtred_' + filename + '.csv'
 #
 #     process_list = []
 #
@@ -204,7 +204,7 @@
 #
 #     df = dd.read_csv(
 #         FILE_PATH + filename,
-#         sep="\t",
+#         sep='\t',
 #         names=['chr', 'begin', 'end', 'id', 'score'],
 #         blocksize='100mb'
 #     )
@@ -214,7 +214,7 @@
 #
 #     if bed_file_path:
 #         if args.verbose:
-#             print(f"Added .bed file on path {bed_file_path}")
+#             print(f'Added .bed file on path {bed_file_path}')
 #
 #     for part in range(df.npartitions):
 #         process_list.append(que.submit(
@@ -227,9 +227,9 @@
 #         ))
 #         # TODO progress bar
 #     if args.verbose:
-#         print(f"Your file creating. You can see progress here:\n http://{IP}:{PORT}/status\n")
+#         print(f'Your file creating. You can see progress here:\n http://{IP}:{PORT}/status\n')
 #
-#         print(f"{bcolors.OKCYAN}Progress bar is not working yet. Whatever ¯\_(ツ)_/¯\nW8 a bit{bcolors.ENDC}")
+#         print(f'{bcolors.OKCYAN}Progress bar is not working yet. Whatever ¯\_(ツ)_/¯\nW8 a bit{bcolors.ENDC}')
 #
 #     a = [process.result() for process in process_list]
 #     progress(a, notebook=False)
@@ -242,7 +242,7 @@
 #         filename,
 #         path
 # ):
-#     """Creating features"""
+#     '''Creating features'''
 #
 #     # chroms - list with chroms of the organism
 #     chroms = list(sizes.keys())
@@ -251,7 +251,7 @@
 #     data = {chrm: np.zeros(sizes[chrm], dtype=np.uint16) for chrm in chroms}
 #
 #     # exp_df - df with selected rows from chip-atlas bed file
-#     exp_df = pd.read_csv(FILE_PATH + "filtred_" + filename + ".csv", header=None, sep=',')
+#     exp_df = pd.read_csv(FILE_PATH + 'filtred_' + filename + '.csv', header=None, sep=',')
 #     exp_df = exp_df[exp_df[3].isin(exps)]
 #     exp_df = exp_df[exp_df[0].isin(chroms)]
 #
@@ -262,8 +262,8 @@
 #     # data_sparse - convert data to sparse
 #     data_sparse = {chrm: SparseVector(data[chrm]) for chrm in chroms}
 #
-#     os.makedirs(os.path.expanduser(path) + "/omicDC_results", exist_ok=True)
-#     dump(data_sparse, os.path.expanduser(path) + "/omicDC_results/" + key[0].replace(' ', '_') + "_" + key[1] + ".pkl",
+#     os.makedirs(os.path.expanduser(path) + '/omicDC_results', exist_ok=True)
+#     dump(data_sparse, os.path.expanduser(path) + '/omicDC_results/' + key[0].replace(' ', '_') + '_' + key[1] + '.pkl',
 #          3)
 #
 #
@@ -273,7 +273,7 @@
 #         filename,
 #         path
 # ):
-#     """Create features file"""
+#     '''Create features file'''
 #     # sizes - dict with cromosome as key and it's len as value
 #     sizes = pd.read_csv(FILE_PATH + gen_assembly + '.chrom.sizes', sep='\t', header=None)
 #     sizes = dict(sizes.values)
@@ -283,7 +283,7 @@
 #
 #
 # def parse_private():
-#     """Function to take data from private .txt file"""
+#     '''Function to take data from private .txt file'''
 #     d = {}
 #     with open(PRIVATE_PATH) as f:
 #         for line in f:
@@ -300,10 +300,10 @@
 #
 #
 # def logging(options):
-#     """Logging function"""
+#     '''Logging function'''
 #     cwd = os.getcwd()
-#     f = open(cwd + "/log.txt", mode='a')
-#     f.write("\n-----------------------------------\n")
+#     f = open(cwd + '/log.txt', mode='a')
+#     f.write('\n-----------------------------------\n')
 #     f.write(time.ctime(time.time()) + '\n')
 #     f.write(os.getlogin() + '\n')
 #     for key, value in options.items():
@@ -314,33 +314,33 @@
 #
 #     args = cmd_line.parse_args()
 #
-#     print(f"{bcolors.OKCYAN}Be aware of bugs{bcolors.ENDC}")
+#     print(f'{bcolors.OKCYAN}Be aware of bugs{bcolors.ENDC}')
 #
 #     hyperparametrs = parse_private()
 #
-#     NCORES = int(hyperparametrs["NCORES"])
-#     NWORKERS = int(hyperparametrs["NWORKERS"])
-#     IP = hyperparametrs["IP"]
-#     PORT = hyperparametrs["PORT"]
-#     FILE_PATH = hyperparametrs["file_path"]
+#     NCORES = int(hyperparametrs['NCORES'])
+#     NWORKERS = int(hyperparametrs['NWORKERS'])
+#     IP = hyperparametrs['IP']
+#     PORT = hyperparametrs['PORT']
+#     FILE_PATH = hyperparametrs['file_path']
 #
 #     with warnings.catch_warnings(record=True) as caught_warnings:
-#         warnings.simplefilter("always")
+#         warnings.simplefilter('always')
 #         que = Client(n_workers=NCORES, threads_per_worker=NWORKERS)
 #         for warn in caught_warnings:
 #             if str(warn.message).find('Port 8787 is already in use') != -1:
-#                 print(f"{bcolors.OKCYAN}U r not alone. Sorry but u have to w8.\nChill a bit!{bcolors.ENDC}")
+#                 print(f'{bcolors.OKCYAN}U r not alone. Sorry but u have to w8.\nChill a bit!{bcolors.ENDC}')
 #                 exit()
 #
 #     # (н) добавил опцию
 #     options = {
 #         # Parse arguments from cmd line to special dict
-#         "id": args.id,
-#         "Genome assembly": args.assembly,
-#         "Antigen class": args.antigen_class,
-#         "Antigen": args.antigen,
-#         "Cell type class": args.cell_type,
-#         "Cell type": args.cell
+#         'id': args.id,
+#         'Genome assembly': args.assembly,
+#         'Antigen class': args.antigen_class,
+#         'Antigen': args.antigen,
+#         'Cell type class': args.cell_type,
+#         'Cell type': args.cell
 #     }
 #
 #     for key in options.keys():
@@ -350,14 +350,14 @@
 #     logging(options)
 #
 #     if args.verbose:
-#         print("Succes parse arguments!")
+#         print('Succes parse arguments!')
 #         for key, value in options.items():
 #             print(key, ':', value)
 #
-#     match_exp_df = create_matching_expirement_df(que, "experimentList.tab", options)
+#     match_exp_df = create_matching_expirement_df(que, 'experimentList.tab', options)
 #
 #     if args.verbose:
-#         print(f"Was finded {len(match_exp_df)} results:\n " + str(match_exp_df.head()))
+#         print(f'Was finded {len(match_exp_df)} results:\n ' + str(match_exp_df.head()))
 #
 #     create_sorted_bed_file(que, hyperparametrs[args.assembly], match_exp_df, args.bed)
 #
@@ -367,4 +367,4 @@
 #         print('Feature creation started')
 #     create_features_files(match_exp_df, args.assembly, hyperparametrs[args.assembly], args.path)
 #     print('Feature creation fineshed')
-#     os.remove(FILE_PATH + "filtred_" + hyperparametrs[args.assembly] + ".csv")
+#     os.remove(FILE_PATH + 'filtred_' + hyperparametrs[args.assembly] + '.csv')

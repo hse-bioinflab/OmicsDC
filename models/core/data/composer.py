@@ -14,7 +14,7 @@ class Composer(Dataset):
         target_transform: Optional[Callable] = None,
     ):
         if not features or not targets or not windows:
-            raise ValueError("There must be at least 1 data source for features/targets and at least 1 genomic window.")
+            raise ValueError('There must be at least 1 data source for features/targets and at least 1 genomic window.')
         self.features = features
         self.targets = targets
         self.windows = windows
@@ -35,7 +35,7 @@ class Composer(Dataset):
         if self.target_transform is not None:
             targets = self.target_transform(targets)
 
-        return {"features": features, "targets": targets}
+        return {'features': features, 'targets': targets}
 
     def __len__(self):
         return len(self.windows)

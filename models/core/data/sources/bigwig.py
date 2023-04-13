@@ -20,15 +20,15 @@ class BigWig(DataSource):
 
         match (fwd, rev, unstranded):
             case (None, None, _) if unstranded is not None:
-                self.paths = {"+": unstranded, "-": unstranded, ".": unstranded}
+                self.paths = {'+': unstranded, '-': unstranded, '.': unstranded}
             case (_, _, None) if fwd is not None and rev is not None:
-                self.paths = {"+": fwd, "-": rev}
+                self.paths = {'+': fwd, '-': rev}
             case _:
-                raise ValueError("Data must be either unstranded (fwd == rev == None) or stranded (unstranded == None)")
+                raise ValueError('Data must be either unstranded (fwd == rev == None) or stranded (unstranded == None)')
 
-    def fetch(self, contig: str, strand: Literal["+", "-", "."], start: int, end: int) -> np.ndarray:
+    def fetch(self, contig: str, strand: Literal['+', '-', '.'], start: int, end: int) -> np.ndarray:
         if strand not in self.paths:
-            raise ValueError(f"Trying to fetch data for unavailable strand: {strand}")
+            raise ValueError(f'Trying to fetch data for unavailable strand: {strand}')
         if strand not in self.bws:
             self.bws[strand] = pyBigWig.open(self.paths[strand].as_posix())
 
