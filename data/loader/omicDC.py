@@ -1,32 +1,16 @@
 from pathlib import Path
+from loader.resources import cashed_ExperimentList
 
+import subprocess
 import pandas as pd
 import numpy as np
 import dask.dataframe as dd
-import stat
-import time
-import wget
-import dask
 from dask.distributed import Client
-from dask.diagnostics import ProgressBar
-from dask.distributed import progress
-import gc
+import wget
 
 import multiprocessing
 import os
 import warnings
-
-class bcolors:
-    HEADER = '\033[95m'
-    OKBLUE = '\033[94m'
-    OKCYAN = '\033[96m'
-    OKGREEN = '\033[92m'
-    WARNING = '\033[93m'
-    FAIL = '\033[91m'
-    ENDC = '\033[0m'
-    BOLD = '\033[1m'
-    UNDERLINE = '\033[4m'
-
 
 def create_matching_expirement_df(
             filepath, 
@@ -48,8 +32,7 @@ def create_matching_expirement_df(
 
     for key in options.keys():
         if options[key]:
-            tmp = options[key].split(',')
-            match_exp_df = match_exp_df.loc[match_exp_df[key].isin(tmp)]
+            match_exp_df = match_exp_df.loc[match_exp_df[key].isin(options[key])]
 
     return match_exp_df
 
@@ -120,14 +103,14 @@ def omics(expid: str = None, assembly: str = 'hg38', assembly_threshold: str = '
 
     # move exp file
     if not os.path.isfile(storage + "/experimentList.tab"):
-        os.system(f"gunzip {storage}/experimentList.tab.gz")
+        subprocess.run(f"gunzip {storage}/experimentList.tab.gz")
 
     if not os.path.isfile(storage + f"/allPeaks_light.{assembly}.{assembly_threshold}.bed"):
         print("new wget")
         wget.download(f"https://chip-atlas.dbcls.jp/data/hg38/allPeaks_light/allPeaks_light.{assembly}.{assembly_threshold}.bed.gz",
                       storage
                     )
-        os.system(f"gunzip {storage}/allPeaks_light.{assembly}.{assembly_threshold}.bed.gz")
+        subprocess.run(f"gunzip {storage}/allPeaks_light.{assembly}.{assembly_threshold}.bed.gz")
     
     options = {
         "id"                :   expid,
@@ -138,20 +121,18 @@ def omics(expid: str = None, assembly: str = 'hg38', assembly_threshold: str = '
         "Cell type"         :   cell
     }
 
-    for key in options.keys():
-        if options[key]:
-            options[key] = options[key].replace('_', ' ')
-    
-    with warnings.catch_warnings(record=True) as caught_warnings:
-        warnings.simplefilter("always")
-        for warn in caught_warnings:
-            if str(warn.message).find('Port 8787 is already in use') != -1:
-                print(f"{bcolors.OKCYAN}U r not alone. Sorry but u have to w8.\nChill a bit!{bcolors.ENDC}") 
-                exit()
+
+# Dask multiuser checking.    
+    # with warnings.catch_warnings(record=True) as caught_warnings:
+    #     warnings.simplefilter("always")
+    #     for warn in caught_warnings:
+    #         if str(warn.message).find('Port 8787 is already in use') != -1:
+    #             print(f"{bcolors.OKCYAN}U r not alone. Sorry but u have to w8.\nChill a bit!{bcolors.ENDC}") 
+    #             exit()
 
     match_exp_df = create_matching_expirement_df(storage + "/experimentList.tab", options)
 
     create_sorted_bed_file(f"allPeaks_light.{assembly}.{assembly_threshold}.bed", match_exp_df)
     
     os.replace(storage + f"/filtred_allPeaks_light.{assembly}.{assembly_threshold}.bed", output_path)
-    os.system(f"gzip {output_path}/filtred_allPeaks_light.{assembly}.{assembly_threshold}.bed.gz")
+    subprocess.run(f"gzip {output_path}/filtred_allPeaks_light.{assembly}.{assembly_threshold}.bed.gz")
