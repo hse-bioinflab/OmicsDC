@@ -14,10 +14,10 @@ import os
 import warnings
 
 def create_matching_expirement_df(
-            filepath, 
+            filepath,
             options,
             verbose
-        ):   
+        ):
     """ Function to return expirement names df"""
 
     # match_exp_df - df for matching experiments
@@ -38,11 +38,9 @@ def create_matching_expirement_df(
     return match_exp_df
 
 
-def add_sorted_bed_2_file( 
-            filename,
+def add_sorted_bed_2_file(
             df,
-            num,
-            matching_experiments,
+            matching_experiments
         ):
     """ Function to add lines to .csv file from part of sorted .bed files"""
     return df.loc[df['id'].isin(matching_experiments)]
@@ -61,9 +59,9 @@ def create_sorted_bed_file(
 
     matching_experiments = list(match_exp_df.loc[:,'id'])
 
-    df = dd.read_csv(   
+    df = dd.read_csv(
                 storage + filename,
-                sep = "\t", 
+                sep = "\t",
                 names = ['chr', 'begin', 'end', 'id', 'score'],
                 blocksize = '100mb'
                 )
