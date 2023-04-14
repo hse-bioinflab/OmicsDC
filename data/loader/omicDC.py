@@ -1,5 +1,6 @@
 from pathlib import Path
 from loader.resources import cashed_ExperimentList
+from typing import Union
 
 import subprocess
 import pandas as pd
@@ -75,7 +76,8 @@ def del_slash(path):
     return path[:-1] if path[-1] == '/' else path
 
 
-def omics(expid: str = None, assembly: str = 'hg38', assembly_threshold: str = '05' , antigen_class: str = None, antigen: str = None, cell_type: str = None, cell: str = None, storage: Path = 'storage', output_path: Path = './' , ncores: int = 2, nworkers: int = 4, verbose: bool = True):
+def omics(expid: Union[str,list] = None, assembly: Union[str,list] = 'hg38', assembly_threshold: Union[str,list] = '05' , antigen_class: Union[str,list] = None,
+          antigen: Union[str,list] = None, cell_type: Union[str,list] = None, cell: Union[str,list] = None, storage: Path = 'storage', output_path: Path = './'):
     '''
     Function to create omics data from chip-atlas database.
     Arguments:
@@ -88,8 +90,7 @@ def omics(expid: str = None, assembly: str = 'hg38', assembly_threshold: str = '
         storage: Path, default is './data/storage'
         output_path: Path, default is './'
         assembly: str, default is 'hg38'
-        ncores and nworkers: int, multithread parametrs
-        verbose: bool
+
 
     Outputs:
         In Path functions creates .csv file with omic data
