@@ -61,15 +61,10 @@ def add_sorted_bed_2_file(
             matching_experiments,
         ):
     """ Function to add lines to .csv file from part of sorted .bed files"""
-    part = df.partitions[num]
-    part = part.loc[part['id'].isin(matching_experiments)]
-    part = part.compute()
-    part.to_csv(filename, index=False, header=False, mode='a')
-    return num
+    return df.loc[df['id'].isin(matching_experiments)]
 
 
 def create_sorted_bed_file(
-        que,
         storage,
         filename,
         match_exp_df
@@ -89,20 +84,8 @@ def create_sorted_bed_file(
                 blocksize = '100mb'
                 )
 
-    open(path_2_sorted_file, mode = 'w').close()  # Creating empty .csv for editing
-    os.chmod(path_2_sorted_file, 33279)
-
-    for part in range(df.npartitions):
-        process_list.append(que.submit(
-                                add_sorted_bed_2_file,
-                                path_2_sorted_file,
-                                df,
-                                part,
-                                matching_experiments
-                                ))
-    
-    a = [process.result() for process in process_list]
-    progress(a)
+    df = df.map_partitions(add_sorted_bed_2_file, matching_experiments)
+    df.to_csv(path_2_sorted_file, index=False, header=False, single_file=True)
 
 
 def del_slash(path):
@@ -161,7 +144,6 @@ def omics(expid: str = None, assembly: str = 'hg38', assembly_threshold: str = '
     
     with warnings.catch_warnings(record=True) as caught_warnings:
         warnings.simplefilter("always")
-        que = Client(n_workers=ncores, threads_per_worker=nworkers)
         for warn in caught_warnings:
             if str(warn.message).find('Port 8787 is already in use') != -1:
                 print(f"{bcolors.OKCYAN}U r not alone. Sorry but u have to w8.\nChill a bit!{bcolors.ENDC}") 
@@ -169,8 +151,7 @@ def omics(expid: str = None, assembly: str = 'hg38', assembly_threshold: str = '
 
     match_exp_df = create_matching_expirement_df(storage + "/experimentList.tab", options)
 
-    create_sorted_bed_file(que, f"allPeaks_light.{assembly}.{assembly_threshold}.bed", match_exp_df)
-    que.shutdown()
+    create_sorted_bed_file(f"allPeaks_light.{assembly}.{assembly_threshold}.bed", match_exp_df)
     
     os.replace(storage + f"/filtred_allPeaks_light.{assembly}.{assembly_threshold}.bed", output_path)
     os.system(f"gzip {output_path}/filtred_allPeaks_light.{assembly}.{assembly_threshold}.bed.gz")
