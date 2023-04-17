@@ -58,7 +58,7 @@ def add_sorted_bed_2_file(
             filename,
             df,
             num,
-            matching_experiments
+            matching_experiments,
         ):
     """ Function to add lines to .csv file from part of sorted .bed files"""
     return df.loc[df['id'].isin(matching_experiments)]
