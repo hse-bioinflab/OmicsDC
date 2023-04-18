@@ -76,7 +76,7 @@ def worker_file_creator(tasks, file_dict):
         for f in range(start, end):
             file = list(df.iloc[f])
             with open(f'./tmp/{file[0]}_{file[1]}_{file[2]}_{file[3]}_{file[4]}_{file[5]}.bed', 'w+') as f:
-                d[file[0]] = f'{file[0]}_{file[1]}_{file[2]}_{file[3]}_{file[4]}_{file[5]}.bed'
+                file_dict[file[0]] = f'{file[0]}_{file[1]}_{file[2]}_{file[3]}_{file[4]}_{file[5]}.bed'
 
 
 def create_files(n_workers):
@@ -157,7 +157,7 @@ def omics(expid: Union[str,list] = None, assembly: Union[str,list] = 'hg38', ass
     #             print(f"{bcolors.OKCYAN}U r not alone. Sorry but u have to w8.\nChill a bit!{bcolors.ENDC}") 
     #             exit()
 
-    create_files(8)
+    create_files(assembly, n_workers=8)
 
     match_exp_df = create_matching_expirement_df(storage + "/experimentList.tab", options)
 
