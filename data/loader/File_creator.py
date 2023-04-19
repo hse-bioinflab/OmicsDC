@@ -1,7 +1,7 @@
 import pandas as pd
 import numpy as np
 import multiprocessing as mp
-from multiprocessing import Queue,shared_memory,Process, current_process,active_children
+from multiprocessing import Queue,shared_memory,Process, current_process,active_children, Manager
 from tqdm import tqdm
 import os
 import queue
@@ -17,6 +17,7 @@ df = table[table[1] == 'hg38']
 df = df.replace(' ', '_', regex=True)
 df = df.replace('/', '_', regex=True)
 
+#TODO Подумать про словарь
 exp = table.loc[table[1] == "hg38"]
 exp = np.array(exp.values.tolist())
 shm = shared_memory.SharedMemory(create=True, size=exp.nbytes)
@@ -36,12 +37,6 @@ iterator = pd.read_csv(
         header= None
     )
 
-def ParseLine(line, que: list, num_writers:int ):
-    """Function to separate lines each into special writer"""
-    que_num = int(line[3][3:])%num_writers
-    while que[que_num].qsize() > 10:
-        pass
-    que[que_num].put(line)
     
 def SendPackage(que: list, parser_bufer: dict, pause: dict):
     for buf in parser_bufer:
@@ -100,12 +95,13 @@ def writer(que):
     print(f"{current_process().name} stopped")
     
 
+#TODO genome folder
 def worker_file_creator(tasks):
     while not tasks.empty():
         start, end = tasks.get()
         for f in range(start, end):
             file = list(df.iloc[f])
-            with open(f'./tmp/{file[0]}_{file[1]}_{file[2]}_{file[3]}_{file[4]}_{file[5]}.bed', 'w+') as f:
+            with open(f'./resources/{file[0]}_{file[1]}_{file[2]}_{file[3]}_{file[4]}_{file[5]}.bed', 'w+') as f:
                 file_dict[file[0]] = f'{file[0]}_{file[1]}_{file[2]}_{file[3]}_{file[4]}_{file[5]}.bed'
 
 
@@ -128,7 +124,7 @@ def create_files(n_workers):
 
 
 
-
+#TODO аргумент лист
 if __name__ == '__main__':
     create_files(n_workers=8)
 
