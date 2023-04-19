@@ -43,16 +43,16 @@ def ParseLine(line, que: list, num_writers:int ):
         pass
     que[que_num].put(line)
     
-def SendPackage(que: list, parser_bufer: dict):
-    skipped = 0
+def SendPackage(que: list, parser_bufer: dict, pause: dict):
     for buf in parser_bufer:
         if len(parser_bufer[buf]) > 100:
-            if (que[buf].qsize() > 1000):
-                skipped += 1
-            que[buf].put(parser_bufer[buf])
-            print(f"send {buf}")
-            parser_bufer[buf] = []
-    return skipped
+            while pause[buf] > 10:
+                if (que[buf].qsize() > 1000):
+                    pause[buf] += 1
+                else:
+                    pause[buf] = 0
+                    que[buf].put(parser_bufer[buf])
+                    parser_bufer[buf] = []
 
 
 def parser(chunk_que, que: dict, num_writers: int, shared_memory_name: str, SM_meta: dict):
@@ -71,9 +71,8 @@ def parser(chunk_que, que: dict, num_writers: int, shared_memory_name: str, SM_m
             buf_trigger += 1
             if buf_trigger > 1000:
                 buf_trigger = 0
-                pause[q_num] += SendPackage(que, parser_bufer)
-                if pause[q_num] > 100:
-                    print(f"stacked at {pause[q_num]}")
+                SendPackage(que, parser_bufer, pause)
+
             ParseLine(data.iloc[i,:], que, num_writers)
 
 def writer(que):
@@ -163,7 +162,7 @@ if __name__ == '__main__':
                 
             pass
 
-    
+    join parser
         
 
     for w in writer_list:
