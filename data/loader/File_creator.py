@@ -162,7 +162,7 @@ if __name__ == '__main__':
                 
             pass
 
-    join parser
+    [par.join() for par in parser_list]
         
 
     for w in writer_list:
