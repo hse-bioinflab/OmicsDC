@@ -7,7 +7,11 @@ import os
 import queue
 import time
 
-table = pd.read_csv("exp_edited.tab", header = None)
+table = pd.read_csv("experimentList.tab",
+                    sep = '\t', 
+                    usecols=range(6),
+                    header = None
+                    )
 
 exp = table.loc[table[1] == "hg38"]
 exp = np.array(exp.values.tolist())
@@ -19,6 +23,7 @@ exp_copy[:] = exp[:]
 existing_shm = shared_memory.SharedMemory(name=shm.name)
 c = np.ndarray(exp.shape, dtype=exp.dtype, buffer=existing_shm.buf)
 
+file_dict = Manager().dict()
 
 iterator = pd.read_csv(
         f'M:/Fast_Work/allPeaks_light.mm9.50.bed',
@@ -69,6 +74,31 @@ def writer(que):
     print(f"{current_process().name} stopped")
     
 
+def worker_file_creator(tasks, file_dict):
+    while not tasks.empty():
+        start, end = tasks.get()
+        for f in range(start, end):
+            file = list(df.iloc[f])
+            with open(f'./tmp/{file[0]}_{file[1]}_{file[2]}_{file[3]}_{file[4]}_{file[5]}.bed', 'w+') as f:
+                file_dict[file[0]] = f'{file[0]}_{file[1]}_{file[2]}_{file[3]}_{file[4]}_{file[5]}.bed'
+
+
+def create_files(n_workers):
+    tasks = mp.Queue()
+
+    for batch_start in range(0, len(df) - 1000, 1000):
+        tasks.put((batch_start, batch_start + 1000))
+    tasks.put((len(df) - 1000, len(df)))
+    
+    procs = [
+        mp.Process(target=worker_file_creator, args=(tasks, file_dict,)) for _ in range(n_workers)
+    ]
+
+    for p in procs:
+        p.start()
+    
+    for p in procs:
+        p.join()
 
 
 

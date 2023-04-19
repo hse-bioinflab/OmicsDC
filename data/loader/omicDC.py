@@ -23,7 +23,6 @@ def create_matching_expirement_df(
     # match_exp_df - df for matching experiments
     match_exp_df = pd.read_csv(
                     filepath,
-                    filepath,
                     sep = '\t', 
                     names = ['id', 'Genome assembly', 'Antigen class', 'Antigen', 'Cell type class', 'Cell type'],
                     usecols=range(6)
@@ -68,35 +67,6 @@ def create_sorted_bed_file(
 
     df = df.map_partitions(add_sorted_bed_2_file, matching_experiments)
     df.to_csv(path_2_sorted_file, index=False, header=False, single_file=True)
-
-
-def worker_file_creator(tasks, file_dict):
-    while not tasks.empty():
-        start, end = tasks.get()
-        for f in range(start, end):
-            file = list(df.iloc[f])
-            with open(f'./tmp/{file[0]}_{file[1]}_{file[2]}_{file[3]}_{file[4]}_{file[5]}.bed', 'w+') as f:
-                file_dict[file[0]] = f'{file[0]}_{file[1]}_{file[2]}_{file[3]}_{file[4]}_{file[5]}.bed'
-
-
-def create_files(n_workers):
-    tasks = mp.Queue()
-    file_dict = Manager().dict()
-
-    for batch_start in range(0, len(df) - 1000, 1000):
-        tasks.put((batch_start, batch_start + 1000))
-    tasks.put((len(df) - 1000, len(df)))
-    
-    procs = [
-        mp.Process(target=worker_file_creator, args=(tasks, file_dict,)) for _ in range(n_workers)
-    ]
-
-    for p in procs:
-        p.start()
-    
-    for p in procs:
-        p.join()
-
 
 def del_slash(path):
     return path[:-1] if path[-1] == '/' else path
@@ -156,8 +126,6 @@ def omics(expid: Union[str,list] = None, assembly: Union[str,list] = 'hg38', ass
     #         if str(warn.message).find('Port 8787 is already in use') != -1:
     #             print(f"{bcolors.OKCYAN}U r not alone. Sorry but u have to w8.\nChill a bit!{bcolors.ENDC}") 
     #             exit()
-
-    create_files(assembly, n_workers=8)
 
     match_exp_df = create_matching_expirement_df(storage + "/experimentList.tab", options)
 
