@@ -13,6 +13,10 @@ table = pd.read_csv("experimentList.tab",
                     header = None
                     )
 
+df = table[table[1] == 'hg38']
+df = df.replace(' ', '_', regex=True)
+df = df.replace('/', '_', regex=True)
+
 exp = table.loc[table[1] == "hg38"]
 exp = np.array(exp.values.tolist())
 shm = shared_memory.SharedMemory(create=True, size=exp.nbytes)
@@ -74,7 +78,7 @@ def writer(que):
     print(f"{current_process().name} stopped")
     
 
-def worker_file_creator(tasks, file_dict):
+def worker_file_creator(tasks):
     while not tasks.empty():
         start, end = tasks.get()
         for f in range(start, end):
@@ -104,6 +108,8 @@ def create_files(n_workers):
 
 
 if __name__ == '__main__':
+    create_files(n_workers=8)
+
     parser_list = []
     writer_list = []
     NWRITERS = 36
