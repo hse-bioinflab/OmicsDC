@@ -1,5 +1,4 @@
 from pathlib import Path
-from loader.resources import cashed_ExperimentList
 from typing import Union
 
 import subprocess
