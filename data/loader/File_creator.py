@@ -5,9 +5,9 @@ from pathlib import Path
 import multiprocessing as mp
 from multiprocessing import Queue, Process, current_process,active_children, Manager, shared_memory
 from tqdm import tqdm
-import os
-import queue
+import subprocess
 import time
+import wget
 
 cmd_line = argparse.ArgumentParser(description='Script for preparing assembly file')
 
@@ -112,12 +112,13 @@ def worker_file_creator(df,tasks, check:bool, file_dict: dict):
         start, end = tasks.get()
         for f in range(start, end):
             file = list(df.iloc[f])
+            path = str(Path("./resources"))+f'/{file[0]}_{file[1]}_{file[2]}_{file[3]}_{file[4]}_{file[5]}.bed'
             if check:
-                # проверка наличия файла с таким именем
-                pass
+                if not Path.is_file(path):
+                    file_dict["No_file"] += 1
             else:
-                with open(str(Path("./resources"))+f'/{file[0]}_{file[1]}_{file[2]}_{file[3]}_{file[4]}_{file[5]}.bed', 'w+') as f:
-                    file_dict[file[0]] = f'{file[0]}_{file[1]}_{file[2]}_{file[3]}_{file[4]}_{file[5]}.bed'
+                with open(path, 'w+') as f:
+                    file_dict[file[0]] = path
 
 
 def ExpListProcessing(data: pd.DataFrame, n_workers: int, check: bool, file_dict: dict):
@@ -132,6 +133,8 @@ def ExpListProcessing(data: pd.DataFrame, n_workers: int, check: bool, file_dict
 
     [p.start()  for p in procs]
     [p.join()   for p in procs]
+
+    return 0
     
 
 
@@ -143,50 +146,65 @@ if __name__ == '__main__':
     NWRITERS = NWORKERS * 9
     NPARSERS = NWORKERS * 3
     file_dick = Manager().dict()
-    print(type(file_dick))
 
-    # iterator = pd.read_csv(
-    #         f'M:/Fast_Work/allPeaks_light.mm9.50.bed',
-    #         chunksize=1_000,
-    #         sep = '\t',
-    #         header= None
-    #     )
-
+    if not Path.is_file('./resources/experimentList.tab'):
+        subprocess.run(f"gunzip {Path('./resources/experimentList.tab')}")
     df = pd.read_csv(Path("./resources/exp_edited.tab"),
-                    sep = ',', 
-                    #usecols=range(5),
-                    header = None
-                    )
-    print(args.assembly)
+                        sep = ',', 
+                        #usecols=range(5),
+                        header = None
+                        )
     df = df[df[1] == args.assembly]
     df .replace(
         [' ','/'], '_',
         inplace=True, regex=True
-    )
-    print(df.head())
+        )
+    
+    
+    if not Path.is_dir(f"./resources/{args.assembly}"):
+        print("new wget")
+        wget.download(f"https://chip-atlas.dbcls.jp/data/hg38/allPeaks_light/allPeaks_light.{args.assembly}.{args.assembly_threshold}.bed.gz",
+                      Path(f"./resources")
+                    )
+        subprocess.run(f"gunzip ./resources/allPeaks_light.{args.assembly}.{args.assembly_threshold}.bed.gz")
+        subprocess.run(f"mkdir ./resources/{args.assembly}")
+        
+        ExpListProcessing(df, n_workers=8, check = False, file_dict = file_dick)
+    
+        parser_list = []
+        writer_list = []
+        workers_ques = [ Queue() for i in range(NWRITERS) ]
+        chunk_que = Queue()
 
-    ExpListProcessing(df, n_workers=8, check = args.check, file_dict = file_dick)
- 
-    parser_list = []
-    writer_list = []
-    workers_ques = [ Queue() for i in range(NWRITERS) ]
-    chunk_que = Queue()
+        iter_df = pd.read_csv(
+                Path(f"./resources/{args.assembly}"),
+                chunksize=1_000,
+                sep = '\t',
+                header= None
+            )
+        for chunk in tqdm(iter_df, total = 10):
+            chunk_que.put(chunk)
+            while chunk_que.qsize() > NPARSERS:
+                if len(parser_list) == 0:
+                    for i in range(NWRITERS):
+                        p = Process(target=writer, args=(workers_ques[i],))
+                        writer_list.append(p)
+                        p.start()
+                    for chunk,_ in zip(iter_df,range(NPARSERS)):
+                        p = Process(target=parser, args=(chunk_que, workers_ques,NWRITERS))
+                        parser_list.append(p)
+                        p.start()
+                    
+                pass
 
-
-    for chunk in tqdm(iterator, total = 10):
-        chunk_que.put(chunk)
-        while chunk_que.qsize() > NPARSERS:
-            if len(parser_list) == 0:
-                for i in range(NWRITERS):
-                    p = Process(target=writer, args=(workers_ques[i],))
-                    writer_list.append(p)
-                    p.start()
-                for chunk,_ in zip(iterator,range(NPARSERS)):
-                    p = Process(target=parser, args=(chunk_que, workers_ques,NWRITERS))
-                    parser_list.append(p)
-                    p.start()
-                
-            pass
-
-    [par.join() for par in parser_list]
-    [wr.join()  for wr  in writer_list]    
+        [par.join() for par in parser_list]
+        [wr.join()  for wr  in writer_list]
+        subprocess.run(f"rm ./resources/allPeaks_light.{args.assembly}.{args.assembly_threshold}.bed.gz")
+    
+    elif args.check:
+        file_dick["No_file"] = 0 
+        result = ExpListProcessing(df, n_workers=8, check = False, file_dict = file_dick)
+        print(file_dick["No_file"])
+    
+    else:
+        print("Already satisfaied")    
