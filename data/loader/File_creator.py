@@ -22,30 +22,49 @@ c = np.ndarray(exp.shape, dtype=exp.dtype, buffer=existing_shm.buf)
 
 iterator = pd.read_csv(
         f'M:/Fast_Work/allPeaks_light.mm9.50.bed',
-        chunksize=10_000,
+        chunksize=1_000,
         sep = '\t',
         header= None
     )
 
 def ParseLine(line, que: list, num_writers:int ):
-    #print(line)
+    """Function to separate lines each into special writer"""
     que_num = int(line[3][3:])%num_writers
-    #print(que_num)
     while que[que_num].qsize() > 10:
         pass
     que[que_num].put(line)
     
+def SendPackage(que: list, parser_bufer: dict):
+    skipped = 0
+    for buf in parser_bufer:
+        if len(parser_bufer[buf]) > 100:
+            if (que[buf].qsize() > 1000):
+                skipped += 1
+            que[buf].put(parser_bufer[buf])
+            print(f"send {buf}")
+            parser_bufer[buf] = []
+    return skipped
 
-    
+
 def parser(chunk_que, que: dict, num_writers: int, shared_memory_name: str, SM_meta: dict):
-    """proces worker function"""
+    """Process take chunk from chunk_que and line by line putting it into ParseLine funvtion"""
+    parser_bufer = {key: [] for key in range(num_writers)}
+    buf_trigger = 0
+    pause = {key: 0 for key in range(num_writers)}
     existing_shm = shared_memory.SharedMemory(name=shared_memory_name)
     list_copy = np.ndarray(SM_meta["shape"], dtype=SM_meta["dtype"], buffer=existing_shm.buf) # Это нужно для файла с именем
     while not chunk_que.empty():
         data = chunk_que.get()
         for i in range(data.shape[0]):
-            #print(i)
-            #print(data.iloc[i,:])
+            line = data.iloc[i,:]
+            q_num = int(line[3][3:])%num_writers
+            parser_bufer[q_num].append(line)
+            buf_trigger += 1
+            if buf_trigger > 1000:
+                buf_trigger = 0
+                pause[q_num] += SendPackage(que, parser_bufer)
+                if pause[q_num] > 100:
+                    print(f"stacked at {pause[q_num]}")
             ParseLine(data.iloc[i,:], que, num_writers)
 
 def writer(que):
@@ -55,8 +74,12 @@ def writer(que):
     while is_working:
         if not que.empty():
             pause = 0
-            line = que.get()
-            verbose += 1
+            lines = que.get()
+            for line in lines:
+                with open(f"./{current_process().name}.txt", "+a") as f:
+                    f.write(str(line))
+                    verbose += 1
+            
             if verbose > 50000:
                 print(f"{current_process().name} working on {line}")
                 verbose = 0
@@ -76,8 +99,8 @@ def writer(que):
 if __name__ == '__main__':
     parser_list = []
     writer_list = []
-    NWRITERS = 36
-    NPARSERS = 12
+    NWRITERS = 3
+    NPARSERS = 3
     SM_list = {"shape":exp.shape, "dtype": exp.dtype}
     que_list = [ Queue() for i in range(NWRITERS) ]
     que_chunk = Queue()
@@ -88,6 +111,7 @@ if __name__ == '__main__':
     list_chunks = []
     parser_list = []
     verbose = 0
+
     for chunk in iterator:
         que_chunk.put(chunk)
         while que_chunk.qsize() > NPARSERS:
