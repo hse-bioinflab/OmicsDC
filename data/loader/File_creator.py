@@ -86,7 +86,7 @@ def writer(que):
             lines = que.get()
             for line in lines:
                 with open(f"./{current_process().name}.txt", "+a") as f:
-                    f.write(str(line))
+                    f.write('\t'.join(map(str, line)) + '\n')
                     verbose += 1
             
             if verbose > 50000:
