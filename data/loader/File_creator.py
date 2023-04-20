@@ -149,9 +149,9 @@ if __name__ == '__main__':
 
     if not Path.is_file('./resources/experimentList.tab'):
         subprocess.run(f"gunzip {Path('./resources/experimentList.tab')}")
-    df = pd.read_csv(Path("./resources/exp_edited.tab"),
-                        sep = ',', 
-                        #usecols=range(5),
+    df = pd.read_csv(Path("./resources/experimentList.tab"),
+                        sep = '\t', 
+                        usecols=range(6),
                         header = None
                         )
     df = df[df[1] == args.assembly]
