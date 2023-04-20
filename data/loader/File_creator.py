@@ -124,12 +124,11 @@ def worker_file_creator(df,tasks, check:bool, file_dict: dict):
 def ExpListProcessing(data: pd.DataFrame, n_workers: int, check: bool, file_dict: dict):
     tasks = Queue()
     # if check ?
-    for batch_start in range(0,1000,1000):
-    #range(0, len(data) - 1000, 1000):
+    for batch_start in range(0, len(data) - 1000, 1000):
         tasks.put((batch_start, batch_start + 1000))
     tasks.put((len(data) - 1000, len(data)))
     
-    procs = [Process(target=worker_file_creator, args=(data, tasks,check, file_dict )) for _ in range(n_workers) ]
+    procs = [Process(target=worker_file_creator, args=(data, tasks, check, file_dict, )) for _ in range(n_workers) ]
 
     [p.start()  for p in procs]
     [p.join()   for p in procs]
