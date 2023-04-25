@@ -181,23 +181,12 @@ if __name__ == '__main__':
                 sep = '\t',
                 header= None
             )
-        for chunk in tqdm(iter_df, total = 10):
-            chunk_que.put(chunk)
-            while chunk_que.qsize() > NPARSERS:
-                if len(parser_list) == 0:
-                    for i in range(NWRITERS):
-                        p = Process(target=writer, args=(workers_ques[i],))
-                        writer_list.append(p)
-                        p.start()
-                    for chunk,_ in zip(iter_df,range(NPARSERS)):
-                        p = Process(target=parser, args=(chunk_que, workers_ques,NWRITERS))
-                        parser_list.append(p)
-                        p.start()
-                    
-                pass
-
-        [par.join() for par in parser_list]
-        [wr.join()  for wr  in writer_list]
+        
+        for chunk in iter_df:
+            for line in chunk:
+                    with open(file_dick[line[0]], "+a") as f:
+                        f.write('\t'.join(map(str, line)) + '\n')
+                        
         subprocess.run(f"rm ./resources/allPeaks_light.{args.assembly}.{args.assembly_threshold}.bed.gz")
     
     elif args.check:
