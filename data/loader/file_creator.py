@@ -192,17 +192,17 @@ if __name__ == '__main__':
     SubporocessHub = None
     NWORKERS = args.nworkers
     Files = Manager().dict()
-    WORKING_DIR = Path(f"./resources/{args.assembly}")
+    WORKING_DIR = Path(f"./loader/resources/{args.assembly}")
     chunk_size = args.chunksize
     
 
-    if not Path('./resources/experimentList.tab').exists(): # if user has no ungz list tab - ungz it
-        SubporocessHub = subprocess.Popen(["gunzip",Path('./resources/experimentList.tab.gz')])
+    if not Path('./loader/resources/experimentList.tab').exists(): # if user has no ungz list tab - ungz it
+        SubporocessHub = subprocess.Popen(["gunzip",Path('./loader/resources/experimentList.tab.gz')])
         SubporocessHub.wait()
         SubporocessHub = None
 
     # read ExpList df
-    ExpList = pd.read_csv(Path("./resources/experimentList.tab"),
+    ExpList = pd.read_csv(Path("./loader/resources/experimentList.tab"),
                         sep = ',', 
                         #usecols=range(5),
                         header = None
@@ -217,15 +217,16 @@ if __name__ == '__main__':
         SubporocessHub.wait()
         SubporocessHub = None
 
-    if (not WORKING_DIR.exists()) or args.download: SubporocessHub = DownloadChipAtlasFile(WORKING_DIR,args.assembly, args.assembly_threshold)
+    if (not WORKING_DIR.exists()) : SubporocessHub = DownloadChipAtlasFile(WORKING_DIR,args.assembly, args.assembly_threshold)#or args.download
    
     if args.reload or args.check:
         """Create files for each id experiment"""
         ExpListProcessing(ExpList, n_workers=NWORKERS,path = WORKING_DIR, check = args.check, file_dict = Files)
     
     if args.check and Files["No_file"]:
-        exit("Need reload")
-
+        print("Need reload")
+        exit()
+        
     if SubporocessHub: SubporocessHub.wait()
 
     if args.reload:
@@ -281,4 +282,4 @@ if __name__ == '__main__':
         Checker.join()
         subprocess.Popen(["rm", Path2File])
     
-    exit("Done")
+    exit()
