@@ -103,8 +103,8 @@ def omics(expid: list = None, assembly: list = ['hg38'], assembly_threshold: lis
             
             if "reload" in Result:
                 print(f"Start reload {a}")
-                #SubporocessHub = subprocess.Popen(["python","-W","ignore","./loader/file_creator.py","-a", a, "-t", assembly_threshold, "-r", "1", "-d", "1"],stdout=subprocess.PIPE)
-                #SubporocessHub.wait()
+                SubporocessHub = subprocess.Popen(["python","-W","ignore","./loader/file_creator.py","-a", a, "-t", assembly_threshold, "-r", "1", "-d", "1"],stdout=subprocess.PIPE)
+                SubporocessHub.wait()
             else:
                 print(f"File check of {a} complete")
 
