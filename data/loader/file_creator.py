@@ -76,18 +76,23 @@ cmd_line.add_argument(
 """End of block for cmd line arguments"""  
 
 def writer(que: Queue, done:Queue, file_names: dict):
-    """Process to write lines in separate files via numbers in que and id in file_name dict"""
+    """
+    Process to write lines in separate files via numbers in que and id in file_name dict
+    """
     pause = 0
     is_working = True
     while is_working:
-        if not que.empty():# working cycle 
+        if not que.empty():
+            # Working cycle 
             pause = 0   
             SM_meta, df, lines = que.get()
-            try: # this check for Done
+            try: 
+            # Writing only experiment list tab experiments
                 ShMem = shared_memory.SharedMemory(name=df)
                 list_copy = np.ndarray(SM_meta["shape"], dtype=SM_meta["dtype"], buffer=ShMem.buf)
                 for id,values in lines.items():
-                    try: # writing only experiment list tab experiments
+                    try: 
+                        # Writing only experiment list tab experiments
                         open(file_names[id],'+a').writelines(['\t'.join(line)+'\n' for line in list_copy[[values]][0]])
                     except KeyError:
                         pass 
@@ -138,7 +143,9 @@ def ExpListProcessing(data: pd.DataFrame, path: Path, n_workers: int, check: boo
     return 0
     
 def Put2QandSM_Process(df:pd.DataFrame, lines_bufer: list, writers_que: list):
-    """Function for put and free buffer from __main__ process to child`s Q"""
+    """
+    Function for put and free buffer from __main__ process to child`s Q
+    """
     Df2List = df.to_numpy(dtype=str)
     ShMem = shared_memory.SharedMemory(create=True, size=Df2List.nbytes)
     SM_list = {"shape":Df2List.shape, "dtype": Df2List.dtype}
@@ -155,7 +162,9 @@ def Put2QandSM_Process(df:pd.DataFrame, lines_bufer: list, writers_que: list):
     #print(f"this iter was waiting to {pause*0.01}s")
 
 def FreeTheMemmory_Process(DoneQ : Queue, n_writers: int):
-    """Process to free shared memory blocks"""
+    """
+    Process to free shared memory blocks
+    """
     is_working = True
     done_counter = Counter()
     while is_working:
@@ -173,6 +182,9 @@ def FreeTheMemmory_Process(DoneQ : Queue, n_writers: int):
     print(f"{current_process().name}(GC) stopped")
 
 def DownloadChipAtlasFile(Dir: Path, assembly: str, threshold: str) -> subprocess.Popen:
+    """
+    Downloads ChipAtlas file for a specific assembly and threshold
+    """
     os.mkdir(Dir) 
     import urllib.request,urllib
     urllib = getattr(urllib, 'request', urllib)
@@ -258,7 +270,7 @@ if __name__ == '__main__':
         Checker = Process(target = FreeTheMemmory_Process, args = (done_que,NWORKERS,))
         Checker.start()
 
-        #cycle =0
+ 
         SubporocessHub.wait()
         LinesInDock = str(SubporocessHub.communicate())
         LinesInDock = int(LinesInDock[3:LinesInDock.find(' ')])

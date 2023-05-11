@@ -1,6 +1,7 @@
 from pathlib import Path
 from typing import Union
 from time import gmtime, strftime
+from loader import FILE_CREATOR,RESOURCES
 
 import subprocess
 import pandas as pd
@@ -30,62 +31,26 @@ def create_matching_expirement_df(
 
     return match_exp_df
 
+def omics(expid: list = None, assembly: list = ['hg38'], assembly_threshold: str = '05' , antigen_class: list = None,
+          antigen: list = None, cell_type: list = None, cell: list = None, output_path: Path = Path("./storage/")) -> Path:
+    """
+    Function for processing omics data.
 
-def add_sorted_bed_2_file(
-            df,
-            matching_experiments
-        ):
-    """ Function to add lines to .csv file from part of sorted .bed files"""
-    return df.loc[df['id'].isin(matching_experiments)]
-
-
-def create_sorted_bed_file(
-        storage,
-        filename,
-        match_exp_df
-    ):
-    """Create big .csv table with every finded match"""
-
-    path_2_sorted_file = storage + "filtred_" + filename + ".bed"
-
-    process_list = []
-
-    matching_experiments = list(match_exp_df.loc[:,'id'])
-
-    df = dd.read_csv(
-                storage + filename,
-                sep = "\t",
-                names = ['chr', 'begin', 'end', 'id', 'score'],
-                blocksize = '100mb'
-                )
-
-    df = df.map_partitions(add_sorted_bed_2_file, matching_experiments)
-    df.to_csv(path_2_sorted_file, index=False, header=False, single_file=True)
-
-
-
-def omics(expid: list = None, assembly: list = ['hg38'], assembly_threshold: list = '05' , antigen_class: list = None,
-          antigen: list = None, cell_type: list = None, cell: list = None, resources: Path = Path("./loader"), output_path: Path = Path("./storage/")):
-    '''
-    Function to create omics data from chip-atlas database.
-    Arguments:
-        expid: str of experiments Id
-        assembly_threshold: str 
-        antigen_class: str
-        antigen: str
-        cell_type: str
-        cell: str
-        storage: Path, default is './data/storage'
-        output_path: Path, default is './'
-        assembly: str, default is 'hg38'
-
-
-    Outputs:
-        In Path functions creates .csv file with omic data
+    Args:
+        expid (list): List of experiment IDs.
+        assembly (list): List of genome assemblies.
+        assembly_threshold (str): Assembly threshold.
+        antigen_class (list): List of antigen classes.
+        antigen (list): List of antigens.
+        cell_type (list): List of cell type classes.
+        cell (list): List of cell types.
+        output_path (Path): Output path for the processed files.
 
     Returns:
-        No return
-    '''
+        Path: Path to the processed files.
+
+    """
+
     options = {
         "id"                :   expid,
         "Genome assembly"   :   assembly,
@@ -95,37 +60,40 @@ def omics(expid: list = None, assembly: list = ['hg38'], assembly_threshold: lis
         "Cell type"         :   cell
     }
 
-    #check files
+    # Check files for each assembly
     for a in assembly:
             Result = ""
-            #print(Result)
             while not "done" in Result:
-                SubporocessHub = subprocess.Popen(["python","./loader/file_creator.py","-a", a, "-t", assembly_threshold, "-c", "1"], stdout= subprocess.PIPE)
+                # Execute the file check subprocess
+                SubporocessHub = subprocess.Popen(["python",FILE_CREATOR,"-a", a, "-t", assembly_threshold, "-c", "1"], stdout= subprocess.PIPE)
                 SubporocessHub.wait()
                 Result = str(SubporocessHub.communicate())
                 
                 if "dir" in Result:
+                    # Create working directory with all files download
                     print(f"Start creating working dir {a} with all files download? y/[N]")
                     user_answer = input()
                     if user_answer == 'y':
-                        SubporocessHub = subprocess.Popen(["python","-W","ignore","./loader/file_creator.py","-a", a, "-t", assembly_threshold, "-r", "1", "-d", "1"],stdout=subprocess.PIPE)
+                        SubporocessHub = subprocess.Popen(["python","-W","ignore",FILE_CREATOR,"-a", a, "-t", assembly_threshold, "-r", "1", "-d", "1"],stdout=subprocess.PIPE)
                         SubporocessHub.wait()
                     else:
                         print("Process canceled")
                         return(0)
 
                 elif "reload" in Result:
+                    # Create local files
                     print(f"Start creating local files of {a}")
-                    SubporocessHub = subprocess.Popen(["python","-W","ignore","./loader/file_creator.py","-a", a, "-t", assembly_threshold, "-r", "1"],stdout=subprocess.PIPE)
+                    SubporocessHub = subprocess.Popen(["python","-W","ignore",FILE_CREATOR,"-a", a, "-t", assembly_threshold, "-r", "1"],stdout=subprocess.PIPE)
                     SubporocessHub.wait()
                     Result = str(SubporocessHub.communicate())
                     print(Result)
 
                 elif "download" in Result:
+                    # Download files
                     print(f"Need to download {a}. Start process? y/[N]")
                     user_answer = input()
                     if user_answer == 'y':
-                        SubporocessHub = subprocess.Popen(["python","-W","ignore","./loader/file_creator.py","-a", a, "-t", assembly_threshold, "-r", "1", "-d", "1"],stdout=subprocess.PIPE)
+                        SubporocessHub = subprocess.Popen(["python","-W","ignore",FILE_CREATOR,"-a", a, "-t", assembly_threshold, "-r", "1", "-d", "1"],stdout=subprocess.PIPE)
                         SubporocessHub.wait()
                     else:
                         print("Download cancel")
@@ -135,20 +103,23 @@ def omics(expid: list = None, assembly: list = ['hg38'], assembly_threshold: lis
 
 
 
-
-    match_exp_df = create_matching_expirement_df(Path("./loader/resources/experimentList.tab"), options)
+    # Create a dataframe with matching experiment information
+    match_exp_df = create_matching_expirement_df(RESOURCES / "experimentList.tab", options)
     files_string = ''
     for a in assembly:
-        files_dir = str(resources / f"resources/{a}/")
+        files_dir = str(RESOURCES / f"resources/{a}/")
         match_exp_l = f'_*,'.join(match_exp_df["id"].loc[match_exp_df["Genome assembly"] == a].to_numpy()) + "_*"
         files_string+=match_exp_l
     print(f"Copying {files_string.count('*')}  files")
-        #SubporocessHub = subprocess.Popen("cp ./"+files_dir+'/' + "{" +match_exp_l + "} ./storage/",shell = True)
+
     filename_d = strftime("%Y-%m-%d_%H:%M:%S", gmtime())
     if files_string.count('*') == 1:
+        # Compress files into a tar.gz archive
         SubporocessHub = subprocess.Popen(f"tar -czf {output_path}/{filename_d}.tar.gz ./"+files_dir+'/' + match_exp_l,shell = True)
     else:
         SubporocessHub = subprocess.Popen(f"tar -czf {output_path}/{filename_d}.tar.gz ./"+files_dir+'/' + "{" +match_exp_l + "}",shell = True)
     
     SubporocessHub.wait()
-    return(f"Done. Created file ./{output_path}/{filename_d}.tar.gz ")
+    print(f"Done. Created file ./{output_path}/{filename_d}.tar.gz ")
+
+    return(output_path / f"{filename_d}.tar.gz")
