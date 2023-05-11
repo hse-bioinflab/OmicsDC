@@ -1,7 +1,6 @@
 from pathlib import Path
 from typing import Union
 from time import gmtime, strftime
-from loader import FILE_CREATOR,RESOURCES
 
 import subprocess
 import pandas as pd
@@ -50,6 +49,9 @@ def omics(expid: list = None, assembly: list = ['hg38'], assembly_threshold: str
         Path: Path to the processed files.
 
     """
+    LOADER = Path("./loader")
+    RESOURCES = Path("./loader/resources")
+    FILE_CREATOR = "./loader/file_creator.py"
 
     options = {
         "id"                :   expid,

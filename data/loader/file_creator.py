@@ -1,5 +1,4 @@
 import argparse,subprocess, time, urllib, os, warnings
-
 import multiprocessing as mp
 from multiprocessing import Queue, Process, current_process,active_children, Manager, shared_memory
 
@@ -9,6 +8,7 @@ from collections import Counter
 from multiprocessing.shared_memory import SharedMemory
 import pandas as pd
 import numpy as np
+
 
 """ New class for checking progress in download"""
 class TqdmUpTo(tqdm):
