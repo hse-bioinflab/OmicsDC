@@ -97,16 +97,41 @@ def omics(expid: list = None, assembly: list = ['hg38'], assembly_threshold: lis
 
     #check files
     for a in assembly:
-            SubporocessHub = subprocess.Popen(["python","-W","ignore","./loader/file_creator.py","-a", a, "-t", assembly_threshold, "-c", "1"], stdout= subprocess.PIPE)
-            SubporocessHub.wait()
-            Result = str(SubporocessHub.communicate())
-            
-            if "reload" in Result:
-                print(f"Start reload {a}")
-                SubporocessHub = subprocess.Popen(["python","-W","ignore","./loader/file_creator.py","-a", a, "-t", assembly_threshold, "-r", "1", "-d", "1"],stdout=subprocess.PIPE)
+            Result = ""
+            #print(Result)
+            while not "done" in Result:
+                SubporocessHub = subprocess.Popen(["python","./loader/file_creator.py","-a", a, "-t", assembly_threshold, "-c", "1"], stdout= subprocess.PIPE)
                 SubporocessHub.wait()
-            else:
-                print(f"File check of {a} complete")
+                Result = str(SubporocessHub.communicate())
+                
+                if "dir" in Result:
+                    print(f"Start creating working dir {a} with all files download? y/[N]")
+                    user_answer = input()
+                    if user_answer == 'y':
+                        SubporocessHub = subprocess.Popen(["python","-W","ignore","./loader/file_creator.py","-a", a, "-t", assembly_threshold, "-r", "1", "-d", "1"],stdout=subprocess.PIPE)
+                        SubporocessHub.wait()
+                    else:
+                        print("Process canceled")
+                        return(0)
+
+                elif "reload" in Result:
+                    print(f"Start creating local files of {a}")
+                    SubporocessHub = subprocess.Popen(["python","-W","ignore","./loader/file_creator.py","-a", a, "-t", assembly_threshold, "-r", "1"],stdout=subprocess.PIPE)
+                    SubporocessHub.wait()
+                    Result = str(SubporocessHub.communicate())
+                    print(Result)
+
+                elif "download" in Result:
+                    print(f"Need to download {a}. Start process? y/[N]")
+                    user_answer = input()
+                    if user_answer == 'y':
+                        SubporocessHub = subprocess.Popen(["python","-W","ignore","./loader/file_creator.py","-a", a, "-t", assembly_threshold, "-r", "1", "-d", "1"],stdout=subprocess.PIPE)
+                        SubporocessHub.wait()
+                    else:
+                        print("Download cancel")
+                        return(0)
+                else:
+                    print(f"File check of {a} complete")
 
 
 
@@ -126,4 +151,4 @@ def omics(expid: list = None, assembly: list = ['hg38'], assembly_threshold: lis
         SubporocessHub = subprocess.Popen(f"tar -czf {output_path}/{filename_d}.tar.gz ./"+files_dir+'/' + "{" +match_exp_l + "}",shell = True)
     
     SubporocessHub.wait()
-    print("Process done")
+    return(f"Done. Created file ./{output_path}/{filename_d}.tar.gz ")

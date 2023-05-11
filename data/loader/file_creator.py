@@ -193,11 +193,12 @@ if __name__ == '__main__':
     NWORKERS = args.nworkers
     Files = Manager().dict()
     WORKING_DIR = Path(f"./loader/resources/{args.assembly}")
+    Path2File = WORKING_DIR / f"allPeaks_light.{args.assembly}.{args.assembly_threshold}.bed"
     chunk_size = args.chunksize
     
 
     if not Path('./loader/resources/experimentList.tab').exists(): # if user has no ungz list tab - ungz it
-        SubporocessHub = subprocess.Popen(["gunzip",Path('./loader/resources/experimentList.tab.gz')])
+        SubporocessHub = subprocess.Popen(["gunzip","-k",Path('./loader/resources/experimentList.tab.gz')])
         SubporocessHub.wait()
         SubporocessHub = None
 
@@ -207,7 +208,7 @@ if __name__ == '__main__':
                         #usecols=range(5),
                         header = None
                         )
-    ExpList = ExpList[ExpList[1] == "mm9"].replace(
+    ExpList = ExpList[ExpList[1] == args.assembly].replace(
         [' ','/'], '_',
         inplace=False, regex=True
         )
@@ -217,7 +218,11 @@ if __name__ == '__main__':
         SubporocessHub.wait()
         SubporocessHub = None
 
-    if (not WORKING_DIR.exists()) : SubporocessHub = DownloadChipAtlasFile(WORKING_DIR,args.assembly, args.assembly_threshold)#or args.download
+    if args.download: SubporocessHub = DownloadChipAtlasFile(WORKING_DIR,args.assembly, args.assembly_threshold)
+
+    if (not WORKING_DIR.exists()):
+        print("Need to create working dir and load files")
+        exit()
    
     if args.reload or args.check:
         """Create files for each id experiment"""
@@ -226,13 +231,15 @@ if __name__ == '__main__':
     if args.check and Files["No_file"]:
         print("Need reload")
         exit()
+    
         
     if SubporocessHub: SubporocessHub.wait()
 
     if args.reload:
-        Path2File = WORKING_DIR / f"allPeaks_light.{args.assembly}.{args.assembly_threshold}.bed"
         SubporocessHub = subprocess.Popen(['wc','-l',Path2File], stdout= subprocess.PIPE)
-
+        if args.check and not Path2File.exists():
+            print(f"No {Path2File} file exist. Place it there or download")
+            exit()
         iter_df = pd.read_csv(
                 Path2File,
                 chunksize=chunk_size,
@@ -255,7 +262,7 @@ if __name__ == '__main__':
         SubporocessHub.wait()
         LinesInDock = str(SubporocessHub.communicate())
         LinesInDock = int(LinesInDock[3:LinesInDock.find(' ')])
-
+        print("Cashing files\n")
         for chunk in tqdm(iter_df, total = int(LinesInDock/chunk_size)):
             """W8 till each process take his part from writers_Q"""
             for index,id_exp in enumerate(chunk[3]):
@@ -281,5 +288,7 @@ if __name__ == '__main__':
         [wr.join()  for wr  in writer_list]
         Checker.join()
         subprocess.Popen(["rm", Path2File])
-    
+        subprocess.Popen([])
+    if args.check:
+        print("Check done. Ready to go!")
     exit()
