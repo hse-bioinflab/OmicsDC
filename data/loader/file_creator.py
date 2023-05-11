@@ -203,6 +203,8 @@ if __name__ == '__main__':
     args = cmd_line.parse_args()
     SubporocessHub = None
     NWORKERS = args.nworkers
+    if NWORKERS == -1:
+        NWORKERS = mp.cpu_count()
     Files = Manager().dict()
     WORKING_DIR = Path(f"./loader/resources/{args.assembly}")
     Path2File = WORKING_DIR / f"allPeaks_light.{args.assembly}.{args.assembly_threshold}.bed"
