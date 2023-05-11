@@ -1,6 +1,9 @@
 from pathlib import Path
 from loader.omicDC import omics
 
+LOADER = Path("./loader")
+RESOURCES = Path("./loader/resources")
+FILE_CREATOR = "./loader/file_creator.py"
 
 def assembly(tag: str, saveto: Path, *_, force: bool = False):
     supported = {"GRCh38", "GRCm39"}
