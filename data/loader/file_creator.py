@@ -1,5 +1,4 @@
 import argparse,subprocess, time, urllib, os, warnings
-
 import multiprocessing as mp
 from multiprocessing import Queue, Process, current_process,active_children, Manager, shared_memory
 
@@ -9,6 +8,7 @@ from collections import Counter
 from multiprocessing.shared_memory import SharedMemory
 import pandas as pd
 import numpy as np
+
 
 """ New class for checking progress in download"""
 class TqdmUpTo(tqdm):
@@ -203,6 +203,8 @@ if __name__ == '__main__':
     args = cmd_line.parse_args()
     SubporocessHub = None
     NWORKERS = args.nworkers
+    if NWORKERS == -1:
+        NWORKERS = mp.cpu_count()
     Files = Manager().dict()
     WORKING_DIR = Path(f"./loader/resources/{args.assembly}")
     Path2File = WORKING_DIR / f"allPeaks_light.{args.assembly}.{args.assembly_threshold}.bed"

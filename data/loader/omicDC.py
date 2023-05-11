@@ -1,7 +1,6 @@
 from pathlib import Path
 from typing import Union
 from time import gmtime, strftime
-from loader import FILE_CREATOR,RESOURCES
 
 import subprocess
 import pandas as pd
@@ -31,8 +30,17 @@ def create_matching_expirement_df(
 
     return match_exp_df
 
+def create_signal_file(
+        data: pd.DataFrame,
+        p: Path
+) -> Path:
+    with open(p,"+w") as f:
+        for f in data.to_numpy():
+            f.write(f'{f[0]}_{f[1]}_{f[2]}_{f[3]}_{f[4]}_{f[5]}.bed')
+
+
 def omics(expid: list = None, assembly: list = ['hg38'], assembly_threshold: str = '05' , antigen_class: list = None,
-          antigen: list = None, cell_type: list = None, cell: list = None, output_path: Path = Path("./storage/")) -> Path:
+          antigen: list = None, cell_type: list = None, cell: list = None, output_path: Path = Path("./storage/"), n_workers: int = -1) -> Path:
     """
     Function for processing omics data.
 
@@ -50,6 +58,9 @@ def omics(expid: list = None, assembly: list = ['hg38'], assembly_threshold: str
         Path: Path to the processed files.
 
     """
+    LOADER = Path("./loader")
+    RESOURCES = Path("./loader/resources")
+    FILE_CREATOR = "./loader/file_creator.py"
 
     options = {
         "id"                :   expid,
@@ -74,7 +85,7 @@ def omics(expid: list = None, assembly: list = ['hg38'], assembly_threshold: str
                     print(f"Start creating working dir {a} with all files download? y/[N]")
                     user_answer = input()
                     if user_answer == 'y':
-                        SubporocessHub = subprocess.Popen(["python","-W","ignore",FILE_CREATOR,"-a", a, "-t", assembly_threshold, "-r", "1", "-d", "1"],stdout=subprocess.PIPE)
+                        SubporocessHub = subprocess.Popen(["python","-W","ignore",FILE_CREATOR,"-a", a, "-t", assembly_threshold, "-r", "1", "-d", "1","-n", n_workers],stdout=subprocess.PIPE)
                         SubporocessHub.wait()
                     else:
                         print("Process canceled")
@@ -83,7 +94,7 @@ def omics(expid: list = None, assembly: list = ['hg38'], assembly_threshold: str
                 elif "reload" in Result:
                     # Create local files
                     print(f"Start creating local files of {a}")
-                    SubporocessHub = subprocess.Popen(["python","-W","ignore",FILE_CREATOR,"-a", a, "-t", assembly_threshold, "-r", "1"],stdout=subprocess.PIPE)
+                    SubporocessHub = subprocess.Popen(["python","-W","ignore",FILE_CREATOR,"-a", a, "-t", assembly_threshold, "-r", "1","-n", n_workers],stdout=subprocess.PIPE)
                     SubporocessHub.wait()
                     Result = str(SubporocessHub.communicate())
                     print(Result)
@@ -93,7 +104,7 @@ def omics(expid: list = None, assembly: list = ['hg38'], assembly_threshold: str
                     print(f"Need to download {a}. Start process? y/[N]")
                     user_answer = input()
                     if user_answer == 'y':
-                        SubporocessHub = subprocess.Popen(["python","-W","ignore",FILE_CREATOR,"-a", a, "-t", assembly_threshold, "-r", "1", "-d", "1"],stdout=subprocess.PIPE)
+                        SubporocessHub = subprocess.Popen(["python","-W","ignore",FILE_CREATOR,"-a", a, "-t", assembly_threshold, "-r", "1", "-d", "1","-n", n_workers],stdout=subprocess.PIPE)
                         SubporocessHub.wait()
                     else:
                         print("Download cancel")
@@ -105,19 +116,11 @@ def omics(expid: list = None, assembly: list = ['hg38'], assembly_threshold: str
 
     # Create a dataframe with matching experiment information
     match_exp_df = create_matching_expirement_df(RESOURCES / "experimentList.tab", options)
-    files_string = ''
-    for a in assembly:
-        files_dir = str(RESOURCES / f"resources/{a}/")
-        match_exp_l = f'_*,'.join(match_exp_df["id"].loc[match_exp_df["Genome assembly"] == a].to_numpy()) + "_*"
-        files_string+=match_exp_l
-    print(f"Copying {files_string.count('*')}  files")
-
+    signal_file = RESOURCES / "file_list_2_copy.txt"
+    create_signal_file(match_exp_df,signal_file)
+    
     filename_d = strftime("%Y-%m-%d_%H:%M:%S", gmtime())
-    if files_string.count('*') == 1:
-        # Compress files into a tar.gz archive
-        SubporocessHub = subprocess.Popen(f"tar -czf {output_path}/{filename_d}.tar.gz ./"+files_dir+'/' + match_exp_l,shell = True)
-    else:
-        SubporocessHub = subprocess.Popen(f"tar -czf {output_path}/{filename_d}.tar.gz ./"+files_dir+'/' + "{" +match_exp_l + "}",shell = True)
+    SubporocessHub = subprocess.Popen(f"tar -czf {output_path}/{filename_d}.tar.gz -T {signal_file}" ,shell = True)
     
     SubporocessHub.wait()
     print(f"Done. Created file ./{output_path}/{filename_d}.tar.gz ")
