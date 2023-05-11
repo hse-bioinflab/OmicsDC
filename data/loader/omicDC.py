@@ -107,19 +107,15 @@ def omics(expid: list = None, assembly: list = ['hg38'], assembly_threshold: str
 
     # Create a dataframe with matching experiment information
     match_exp_df = create_matching_expirement_df(RESOURCES / "experimentList.tab", options)
+    signal_file = RESOURCES / "file_list_2_copy.txt"
     files_string = ''
-    for a in assembly:
-        files_dir = str(RESOURCES / f"resources/{a}/")
-        match_exp_l = f'_*,'.join(match_exp_df["id"].loc[match_exp_df["Genome assembly"] == a].to_numpy()) + "_*"
-        files_string+=match_exp_l
-    print(f"Copying {files_string.count('*')}  files")
+    with open(signal_file,"+w") as f:
+        for a in assembly:
+            match_exp_l = f'_*\n'.join(match_exp_df["id"].loc[match_exp_df["Genome assembly"] == a].to_numpy())
+            f.write(match_exp_l)
 
     filename_d = strftime("%Y-%m-%d_%H:%M:%S", gmtime())
-    if files_string.count('*') == 1:
-        # Compress files into a tar.gz archive
-        SubporocessHub = subprocess.Popen(f"tar -czf {output_path}/{filename_d}.tar.gz ./"+files_dir+'/' + match_exp_l,shell = True)
-    else:
-        SubporocessHub = subprocess.Popen(f"tar -czf {output_path}/{filename_d}.tar.gz ./"+files_dir+'/' + "{" +match_exp_l + "}",shell = True)
+    SubporocessHub = subprocess.Popen(f"tar -czf -T {signal_file} -f {output_path}/{filename_d}.tar.gz" ,shell = True)
     
     SubporocessHub.wait()
     print(f"Done. Created file ./{output_path}/{filename_d}.tar.gz ")
