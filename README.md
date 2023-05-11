@@ -1,60 +1,38 @@
-# Introduction
+# Omics Data Loader
 
-This repository serves as a comprehensive framework for conducting deep learning (DL) studies at the HSE bioinformatics
-lab. Our research often involves correlating biological experiment results with other data sources, such as DNA
-sequences or transcription factor binding sites, to gain insights into biological processes. To achieve this, we use
-overlapping annotations or train DL models to identify learned dependencies. This repository primarily focuses on the
-latter approach.
+The Omics Data Loader is a Python library for processing omics data. It provides a convenient interface for loading and manipulating data from various omics experiments.
 
-Specifically, our framework provides the following functionalities:
+## Features
 
-* Downloading genome assemblies (in fasta format) and omics data (in BED format)
-* Training common types of DL models based on the downloaded data to predict target experimental data 
-* Making genome-wide predictions using the trained model
-* Interpreting trained models (not applicable to all)
+- Processing omics data
+- File handling and management
+- Filtering and matching experiments
+- Compressing data into archives
 
-With this framework, we aim to simplify the process of DL-based research and provide a standardized approach for
-conducting experiments in our lab.
+## Installation
 
-# Setup
-
-1. Establish an SSH connection with port forwarding using the following command:
+You can clone the Omics Data Loader repository using Git:
 
 ```bash
-# Forwarding local port 8888 to remote port 8888
-ssh -L localhost:8888:localhost:8888 -p <server-port> <username>@<server-address>
+git clone https://github.com/hse-bioinflab/data-loader>
 ```
 
-Replace <server-address> with the address of the server you want to connect to, and <server-port> with the port number.
+## Usage
 
-3. Clone the repository to the server:
+Import the `omics` function from the `loader` module to start processing omics data:
 
-```bash
-git clone git@github.com:alnfedorov/AI-center.git
-```
+```python
+from loader import omics
 
-3. Build the Docker container with all the necessary dependencies:
+result = omics(expid=None, assembly=['hg38'], assembly_threshold='05', antigen_class=None,
+               antigen=None, cell_type=None, cell=None, output_path=Path("./storage/"))```
+			   
+## Documentation
 
-```bash
-cd AI-center/docker
-docker build -t ai-center:1.0 .
-cd ..
-```
+TBA
 
-4. Launch the JupyterLab frontend:
+## Contributing
 
-```bash
-docker run -it --rm -p 8888:8888 -v $(pwd):/workspace/ ai-center:1.0
-```
+Contributions to the Omics Data Loader are welcome! If you find any issues or have suggestions for improvements, please submit a pull request or open an issue in the GitHub repository.
 
-Check your console for a URL starting with http://127.0.0.1:8888/lab?token=.
-Copy the URL and open it in your browser.
 
-Remember to keep the SSH session running while you work. You may find tmux useful.
-
-# Workflow
-
-The typical workflow consists of three main steps:
-* Download target genomic data using data/loader.ipynb.
-* Train a DL model by choosing a Jupyter notebook from the `models` zoo.
-* Perform post-training analysis, including interpretation and whole-genome prediction. See details in each notebook.

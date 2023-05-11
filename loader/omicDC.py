@@ -32,11 +32,17 @@ def create_matching_expirement_df(
 
 def create_signal_file(
         data: pd.DataFrame,
-        p: Path
+        file_path: Path,
+        assembly: list
 ) -> Path:
-    with open(p,"+w") as f:
-        for f in data.to_numpy():
-            f.write(f'{f[0]}_{f[1]}_{f[2]}_{f[3]}_{f[4]}_{f[5]}.bed')
+    with open(file_path,"+w") as f:
+        data.replace(
+        [' ','/'], '_',
+        inplace=True, regex=True
+        )
+        for a in assembly:
+            for file in data.to_numpy():
+                f.write(f'loader/resources/{a}/{file[0]}_{file[1]}_{file[2]}_{file[3]}_{file[4]}_{file[5]}.bed\n')
 
 
 def omics(expid: list = None, assembly: list = ['hg38'], assembly_threshold: str = '05' , antigen_class: list = None,
@@ -117,10 +123,10 @@ def omics(expid: list = None, assembly: list = ['hg38'], assembly_threshold: str
     # Create a dataframe with matching experiment information
     match_exp_df = create_matching_expirement_df(RESOURCES / "experimentList.tab", options)
     signal_file = RESOURCES / "file_list_2_copy.txt"
-    create_signal_file(match_exp_df,signal_file)
+    create_signal_file(match_exp_df,signal_file,assembly)
     
     filename_d = strftime("%Y-%m-%d_%H:%M:%S", gmtime())
-    SubporocessHub = subprocess.Popen(f"tar -czf {output_path}/{filename_d}.tar.gz -T {signal_file}" ,shell = True)
+    SubporocessHub = subprocess.Popen(f"tar -C {RESOURCES} -czf {output_path}/{filename_d}.tar.gz -T {signal_file}" ,shell = True)
     
     SubporocessHub.wait()
     print(f"Done. Created file ./{output_path}/{filename_d}.tar.gz ")
