@@ -10,7 +10,7 @@ import multiprocessing
 import os
 import subprocess
 
-def create_matching_expirement_df(
+def Matching_Experiments_DF(
             filepath,
             options
         ) -> pd.DataFrame:
@@ -19,9 +19,9 @@ def create_matching_expirement_df(
     # match_exp_df - df for matching experiments
     match_exp_df = pd.read_csv(
                     filepath,
-                    sep = ',', 
-                    names = ['id', 'Genome assembly', 'Antigen class', 'Antigen', 'Cell type class', 'Cell type']
-                    #usecols=range(6)
+                    sep = '\t', 
+                    names = ['id', 'Genome assembly', 'Antigen class', 'Antigen', 'Cell type class', 'Cell type'],
+                    usecols=range(6)
                 )
 
     for key in options.keys():
@@ -42,7 +42,7 @@ def create_signal_file(
         )
         for a in assembly:
             for file in data.to_numpy():
-                f.write(f'loader/resources/{a}/{file[0]}_{file[1]}_{file[2]}_{file[3]}_{file[4]}_{file[5]}.bed\n')
+                f.write(f'{a}/{file[0]}_{file[1]}_{file[2]}_{file[3]}_{file[4]}_{file[5]}.bed\n')
 
 
 def omics(expid: list = None, assembly: list = ['hg38'], assembly_threshold: str = '05' , antigen_class: list = None,
@@ -121,11 +121,11 @@ def omics(expid: list = None, assembly: list = ['hg38'], assembly_threshold: str
 
 
     # Create a dataframe with matching experiment information
-    match_exp_df = create_matching_expirement_df(RESOURCES / "experimentList.tab", options)
+    match_exp_df = Matching_Experiments_DF(RESOURCES / "experimentList.tab", options)
     signal_file = RESOURCES / "file_list_2_copy.txt"
     create_signal_file(match_exp_df,signal_file,assembly)
     
-    filename_d = strftime("%Y-%m-%d_%H:%M:%S", gmtime())
+    filename_d = strftime("%Y-%m-%d_%H_%M_%S", gmtime())
     SubporocessHub = subprocess.Popen(f"tar -C {RESOURCES} -czf {output_path}/{filename_d}.tar.gz -T {signal_file}" ,shell = True)
     
     SubporocessHub.wait()
