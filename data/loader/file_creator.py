@@ -107,7 +107,7 @@ def writer(que: Queue, done:Queue, file_names: dict):
         else:
             pause +=1
             time.sleep(0.1)
-            if pause > 100:
+            if pause > 10:
                 print(f"{current_process().name} paused to {pause * 0.1}s")
     #print(f"{current_process().name} stopped")
     

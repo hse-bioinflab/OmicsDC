@@ -125,7 +125,7 @@ def omics(expid: list = None, assembly: list = ['hg38'], assembly_threshold: str
     signal_file = RESOURCES / "file_list_2_copy.txt"
     create_signal_file(match_exp_df,signal_file,assembly)
     
-    filename_d = strftime("%Y-%m-%d_%H:%M:%S", gmtime())
+    filename_d = strftime("%Y-%m-%d_%H_%M_%S", gmtime())
     SubporocessHub = subprocess.Popen(f"tar -czf {output_path}/{filename_d}.tar.gz -T {signal_file}" ,shell = True)
     
     SubporocessHub.wait()
