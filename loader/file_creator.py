@@ -1,7 +1,7 @@
 import argparse,subprocess, time, urllib, os, warnings
 import multiprocessing as mp
 from multiprocessing import Queue, Process, current_process,active_children, Manager, shared_memory
-import urllib.request,urllib
+
 from pathlib import Path
 from tqdm import tqdm
 from collections import Counter
@@ -185,6 +185,7 @@ def DownloadChipAtlasFile(Dir: Path, assembly: str, threshold: str) -> subproces
     """
     Downloads ChipAtlas file for a specific assembly and threshold
     """
+    import urllib.request,urllib
     os.mkdir(Dir) 
     urllib = getattr(urllib, 'request', urllib)
     Path2File = Dir / f"allPeaks_light.{args.assembly}.{args.assembly_threshold}.bed.gz"
@@ -196,10 +197,11 @@ def DownloadChipAtlasFile(Dir: Path, assembly: str, threshold: str) -> subproces
         t.total = t.n 
     return subprocess.Popen(["gunzip",Path2File]) 
 
-def DownloadExpListTab(P: Path) -> subprocess.Popen():
+def DownloadExpListTab(P: Path) -> Path:
     """
     Downloads ChipAtlas file for a specific assembly and threshold
     """ 
+    import urllib.request,urllib
     urllib = getattr(urllib, 'request', urllib)
     eg_link = "https://chip-atlas.dbcls.jp/data/metadata/experimentList.tab"
     with TqdmUpTo(unit='B', unit_scale=True, unit_divisor=1024, miniters=1,
@@ -228,8 +230,8 @@ if __name__ == '__main__':
 
     # read ExpList df
     ExpList = pd.read_csv(
-                        ExpList,
-                        sep = '/t', 
+                        "./loader/resources/experimentList.tab",
+                        sep = '\t', 
                         usecols=range(6),
                         header = None
                         )
