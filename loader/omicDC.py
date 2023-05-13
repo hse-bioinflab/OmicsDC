@@ -10,7 +10,7 @@ import multiprocessing
 import os
 import subprocess
 
-def create_matching_expirement_df(
+def Matching_Experiments_DF(
             filepath,
             options
         ) -> pd.DataFrame:
@@ -20,7 +20,7 @@ def create_matching_expirement_df(
     match_exp_df = pd.read_csv(
                     filepath,
                     sep = '\t', 
-                    names = ['id', 'Genome assembly', 'Antigen class', 'Antigen', 'Cell type class', 'Cell type']
+                    names = ['id', 'Genome assembly', 'Antigen class', 'Antigen', 'Cell type class', 'Cell type'],
                     usecols=range(6)
                 )
 
@@ -121,7 +121,7 @@ def omics(expid: list = None, assembly: list = ['hg38'], assembly_threshold: str
 
 
     # Create a dataframe with matching experiment information
-    match_exp_df = create_matching_expirement_df(RESOURCES / "experimentList.tab", options)
+    match_exp_df = Matching_Experiments_DF(RESOURCES / "experimentList.tab", options)
     signal_file = RESOURCES / "file_list_2_copy.txt"
     create_signal_file(match_exp_df,signal_file,assembly)
     
