@@ -91,7 +91,7 @@ def omics(expid: list = None, assembly: list = ['hg38'], assembly_threshold: str
                     print(f"Start creating working dir {a} with all files download? y/[N]")
                     user_answer = input()
                     if user_answer == 'y':
-                        SubporocessHub = subprocess.Popen(["python","-W","ignore",FILE_CREATOR,"-a", a, "-t", assembly_threshold, "-r", "1", "-d", "1","-n", n_workers],stdout=subprocess.PIPE)
+                        SubporocessHub = subprocess.Popen(["python","-W","ignore",FILE_CREATOR,"-a", a, "-t", assembly_threshold, "-r", "1", "-d", "1","-n", str(n_workers)],stdout=subprocess.PIPE)
                         SubporocessHub.wait()
                     else:
                         print("Process canceled")
@@ -100,7 +100,7 @@ def omics(expid: list = None, assembly: list = ['hg38'], assembly_threshold: str
                 elif "reload" in Result:
                     # Create local files
                     print(f"Start creating local files of {a}")
-                    SubporocessHub = subprocess.Popen(["python","-W","ignore",FILE_CREATOR,"-a", a, "-t", assembly_threshold, "-r", "1","-n", n_workers],stdout=subprocess.PIPE)
+                    SubporocessHub = subprocess.Popen(["python","-W","ignore",FILE_CREATOR,"-a", a, "-t", assembly_threshold, "-r", "1","-n", str(n_workers)],stdout=subprocess.PIPE)
                     SubporocessHub.wait()
                     Result = str(SubporocessHub.communicate())
                     print(Result)
@@ -110,7 +110,7 @@ def omics(expid: list = None, assembly: list = ['hg38'], assembly_threshold: str
                     print(f"Need to download {a}. Start process? y/[N]")
                     user_answer = input()
                     if user_answer == 'y':
-                        SubporocessHub = subprocess.Popen(["python","-W","ignore",FILE_CREATOR,"-a", a, "-t", assembly_threshold, "-r", "1", "-d", "1","-n", n_workers],stdout=subprocess.PIPE)
+                        SubporocessHub = subprocess.Popen(["python","-W","ignore",FILE_CREATOR,"-a", a, "-t", assembly_threshold, "-r", "1", "-d", "1","-n", str(n_workers)],stdout=subprocess.PIPE)
                         SubporocessHub.wait()
                     else:
                         print("Download cancel")
