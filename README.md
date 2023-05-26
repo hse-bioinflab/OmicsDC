@@ -14,17 +14,17 @@ The Omics Data Loader is a Python library for processing omics data. It provides
 You can clone the Omics Data Loader repository using Git:
 
 ```bash
-git clone https://github.com/hse-bioinflab/data-loader
+git clone https://github.com/hse-bioinflab/OmicsDC.git
 ```
 
 ## Usage
 
-Import the `omics` function from the `loader` module to start processing omics data:
+Import the `OmicsDataCreate` function from the `OmicsDC` module to start processing omics data:
 
 ```python
-from loader import omics
+from OmicsDC import OmicsDataCreate
 
-result = omics(expid=None, assembly=['hg38'], assembly_threshold='05', antigen_class=None,
+result = OmicsDataCreate(expid=None, assembly=['hg38'], assembly_threshold='05', antigen_class=None,
                antigen=None, cell_type=None, cell=None, output_path=Path("./storage/"))
 ```	 
 			   
