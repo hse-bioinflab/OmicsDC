@@ -45,7 +45,7 @@ def create_signal_file(
                 f.write(f'{a}/{file[0]}_{file[1]}_{file[2]}_{file[3]}_{file[4]}_{file[5]}.bed\n')
 
 
-def omics(expid: list = None, assembly: list = ['hg38'], assembly_threshold: str = '05' , antigen_class: list = None,
+def OmicsDataCreate(expid: list = None, assembly: list = ['hg38'], assembly_threshold: str = '05' , antigen_class: list = None,
           antigen: list = None, cell_type: list = None, cell: list = None, output_path: Path = Path("./storage/"), n_workers: int = -1) -> Path:
     """
     Function for processing omics data.
@@ -64,9 +64,9 @@ def omics(expid: list = None, assembly: list = ['hg38'], assembly_threshold: str
         Path: Path to the processed files.
 
     """
-    LOADER = Path("./loader")
-    RESOURCES = Path("./loader/resources")
-    FILE_CREATOR = "./loader/file_creator.py"
+
+    RESOURCES = Path("./OmicsDC/resources")
+    FILE_CREATOR = "./OmicsDC/file_creator.py"
 
     options = {
         "id"                :   expid,

@@ -1,5 +1,5 @@
-from loader.omicDC import omics
-from loader.omicDC import Matching_Experiments_DF
+from OmicsDC.omicDC import OmicsDataCreate
+from OmicsDC.omicDC import Matching_Experiments_DF
 
 Matching_Experiments_Options = {
         "id"                :   None,
@@ -10,4 +10,4 @@ Matching_Experiments_Options = {
         "Cell type"         :   None
     }
 
-__all__ = ["omics","Matching_Experiments_DF", ]
+__all__ = ["OmicsDataCreate","Matching_Experiments_DF", ]

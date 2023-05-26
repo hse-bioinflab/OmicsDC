@@ -220,17 +220,17 @@ if __name__ == '__main__':
     if NWORKERS == -1:
         NWORKERS = mp.cpu_count()
     Files = Manager().dict()
-    WORKING_DIR = Path(f"./loader/resources/{args.assembly}")
+    WORKING_DIR = Path(f"./OmicsDC/resources/{args.assembly}")
     Path2File = WORKING_DIR / f"allPeaks_light.{args.assembly}.{args.assembly_threshold}.bed"
     chunk_size = args.chunksize
     
-    ExpList = Path('./loader/resources/experimentList.tab')
+    ExpList = Path('./OmicsDC/resources/experimentList.tab')
     if not ExpList.exists(): # if user has no ungz list tab - download 
         DownloadExpListTab(ExpList)
 
     # read ExpList df
     ExpList = pd.read_csv(
-                        "./loader/resources/experimentList.tab",
+                        "./OmicsDC/resources/experimentList.tab",
                         sep = '\t', 
                         usecols=range(6),
                         header = None
