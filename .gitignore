@@ -75,3 +75,4 @@ book
 
 # Pyenv
 .python-version
+.ipynb_checkpoints/
